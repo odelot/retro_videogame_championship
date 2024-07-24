@@ -58,25 +58,25 @@
   }
 
 
-  const evento = {
+  let evento = {
     rodadaAtual: 1,
     participantes: [
-      { nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "blake.png" },
+      //{ nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "blake.png" },
       { nome: "Tom Hanks", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "tom.png" },
       { nome: "Brad Pitt", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "brad.png" },
       { nome: "Keanu Reeves", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "keanu.png" },
       { nome: "Jennifer Lopez", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "jennifer.png" },
-      { nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "julia.png" },
+      //{ nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "julia.png" },
       { nome: "Robert Downey Jr.", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "robert.png" },
-      { nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "aniston.png" },
+      //{ nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "aniston.png" },
       { nome: "Henry Cavill", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "henry.png" },
       { nome: "Scarlett Johansson", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "scarlett.png" },
       { nome: "Leonardo DiCaprio", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "leo.png" },
       { nome: "Tom Cruise", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "cruise.png" },
       { nome: "Sandra Bullock", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "sandra.png" },
-      { nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "chris.png" },
+      //{ nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "chris.png" },
       { nome: "Angelina Jolie", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "angelina.png" },
-      { nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "george.png" },
+      //{ nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "george.png" },
     ],
     rodadas: new Array(4),
   }
@@ -273,13 +273,16 @@
     
     const rodadaAtual = getEvento().rodadaAtual;
     if (rodadaAtual <= 4) {
-      $(".identificador-rodada").text("Rodada #" + rodadaAtual);
+      //$(".identificador-rodada").text("Rodada #" + rodadaAtual);
+      $(".identificador-rodada").text("Round #" + rodadaAtual);
     } else
     if (rodadaAtual == 5) {
-      $(".identificador-rodada").text("Semi-Finais");
+      //$(".identificador-rodada").text("Semi-Finais");
+      $(".identificador-rodada").text("Semi-Finals");
     }
     if (rodadaAtual == 6) {
-      $(".identificador-rodada").text("Grande Final");
+      //$(".identificador-rodada").text("Grande Final");
+      $(".identificador-rodada").text("Grand Finale");
     }
     const evento = getEvento();
     $(".partidas").empty();
@@ -403,9 +406,11 @@ function iniciarVitoria() {
 }
 
 function reset() {
-  const tentativa1 = confirm("Tem certeza que quer resetar?");
+  //const tentativa1 = confirm("Tem certeza que quer resetar?");
+  const tentativa1 = confirm("Are you sure you want to reset?");
   if (tentativa1) {
-    const tentativa2 = confirm("Tem certeza que quer resetar mesmo?");
+    //const tentativa2 = confirm("Tem certeza que quer resetar mesmo?");
+    const tentativa2 = confirm("Are you sure you really want to reset?");
     if (tentativa2) {
       clear();
       location.reload();
@@ -576,7 +581,8 @@ function animaEntradaResultado (i) {
     const evento = getEvento();
       if (evento.rodadaAtual == 6) {
         const finalistas = getFinalistas();
-        alert ("Grande Final entre " + finalistas[0].nome + " e " + finalistas[1].nome + "!!!");
+        //alert ("Grande Final entre " + finalistas[0].nome + " e " + finalistas[1].nome + "!!!");
+        alert ("Grand Finale between " + finalistas[0].nome + " and " + finalistas[1].nome + "!!!");
         criarFinal ();
       }
       if (evento.rodadaAtual == 5) {
@@ -600,7 +606,8 @@ function animaEntradaResultado (i) {
               return;
             }            
           } else {
-            primeiros.push(participante);
+            if (primeiros.length < 4)
+              primeiros.push(participante);
           }
         });
         if (primeiros.length > 4) {
@@ -1345,9 +1352,12 @@ function animaEntradaResultado (i) {
       ganhadores = ganhadores.substring(0, ganhadores.length - 2);
       let pergunta;
       if (ganhadoresIdx.length > 1) {
-        pergunta = "(" + ganhadores + ") venceram a partida?";
+        //pergunta = "(" + ganhadores + ") venceram a partida?";
+        pergunta = "(" + ganhadores + ") won the match?";
       } else {
-        pergunta = ganhadores + " venceu a partida?";
+        //pergunta = ganhadores + " venceu a partida?";
+        pergunta = ganhadores + " won the match?";
+        
       }
       const result = confirm(pergunta);
       if (result) {
@@ -1377,7 +1387,8 @@ function animaEntradaResultado (i) {
         $(this).parents(".partida").find(".botoes button").attr("disabled", false);
       }
     } else {
-      alert("Selecione o resultado da partida!");
+      //alert("Selecione o resultado da partida!");
+      alert("Select the match result!");
       $(this).parents(".partida").find(".botoes button").attr("disabled", false);
     }
   }
@@ -1392,7 +1403,8 @@ function animaEntradaResultado (i) {
       const jogador = $(element).attr("meta-data");    
       ganhadoresIdx.push(jogador);
     });
-    const result = confirm("Tem certeza que a partida empatou?");
+    //const result = confirm("Tem certeza que a partida empatou?");
+    const result = confirm("Are you sure the match is a draw?");
     if (result) {
       ganhadoresIdx.forEach(idx => {
         const numRodada = evento.rodadaAtual;
@@ -1408,7 +1420,8 @@ function animaEntradaResultado (i) {
 
   function devoIrParaTabela() {
     if ($(".partida:visible").length == 0) {
-      alert("Todas as partidas foram finalizadas!");
+      //alert("Todas as partidas foram finalizadas!");
+      alert("All matches have been completed!");
       let evento = getEvento();
       evento.rodadaAtual++;
       gravarEvento(evento);
@@ -2283,7 +2296,8 @@ function animaEntradaResultado (i) {
 <div class="w-100 h-100 tela1 tabelaCompetidores telaTabela" >
   <div class="proxima-rodada">
     <img src="marioparty3.png">
-    <p class="strokeme">Proxima Rodada</p>
+    <p class="strokeme">Next Round</p>
+    <!--<p class="strokeme">Proxima Rodada</p>-->
   </div>
   <div class="row banner">
     <div class="col">
@@ -2293,7 +2307,8 @@ function animaEntradaResultado (i) {
         <img src="mushroom.png">
         <img src="mushroom.png">
         <img src="mushroom.png">
-        <p class="fs-1 strokeme">CAMPEONATO</p>
+        <!--<p class="fs-1 strokeme">CAMPEONATO</p>-->
+        <p class="fs-1 strokeme">CHAMPIONSHIP</p>
         <img src="mushroom.png">
         <img src="mushroom.png">
         <img src="mushroom.png">
@@ -2442,6 +2457,12 @@ function animaEntradaResultado (i) {
         "desc": ""
     },
     {
+        "console": "Virtual Boy",
+        "estacao": "x2",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
         "console": "Mega Drive",
         "estacao": "x2",
         "jogo": "Street Fighter 2",
@@ -2492,7 +2513,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Battle Arena Toshiden Remix - ok",
+        "jogo": "Battle Arena Toshiden Remix ",
         "desc": ""
     },
     {
@@ -2570,7 +2591,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "XMen VS Street Fighter - ok",
+        "jogo": "XMen VS Street Fighter ",
         "desc": ""
     },
     {
@@ -2642,7 +2663,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "X-Men Children of the Atom - ok",
+        "jogo": "X-Men Children of the Atom ",
         "desc": ""
     },
     {
@@ -2720,7 +2741,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Marvel Super Heroes - ok",
+        "jogo": "Marvel Super Heroes ",
         "desc": ""
     },
     {
@@ -2798,7 +2819,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Bloody Roar 2 - ok",
+        "jogo": "Bloody Roar 2 ",
         "desc": ""
     },
     {
@@ -2876,7 +2897,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Tony Hawk Pro Skater - ok",
+        "jogo": "Tony Hawk Pro Skater ",
         "desc": ""
     },
     {
@@ -2948,7 +2969,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Tony Hawk Pro Skater 2 - ok",
+        "jogo": "Tony Hawk Pro Skater 2 ",
         "desc": ""
     },
     {
@@ -3008,7 +3029,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Tekken 3 - ok",
+        "jogo": "Tekken 3 ",
         "desc": ""
     },
     {
@@ -3068,7 +3089,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Crash Team Racing - ok",
+        "jogo": "Crash Team Racing ",
         "desc": ""
     },
     {
@@ -3116,7 +3137,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Vigilante 8 2nd Offence - ok",
+        "jogo": "Vigilante 8 2nd Offence ",
         "desc": ""
     },
     {
@@ -3158,7 +3179,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Revolt - ok",
+        "jogo": "Revolt ",
         "desc": ""
     },
     {
@@ -3194,7 +3215,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Super Puzzle Fighter 2 Turbo - ok",
+        "jogo": "Super Puzzle Fighter 2 Turbo ",
         "desc": ""
     },
     {
@@ -3224,7 +3245,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Bushido Blade 2 - ok",
+        "jogo": "Bushido Blade 2 ",
         "desc": ""
     },
     {
@@ -3248,7 +3269,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Street Fighter Alpha 3 - ok",
+        "jogo": "Street Fighter Alpha 3 ",
         "desc": ""
     },
     {
@@ -3272,7 +3293,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Twisted Metal 2 - ok",
+        "jogo": "Twisted Metal 2 ",
         "desc": ""
     },
     {
@@ -3290,7 +3311,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Mortal Kombat Trilogy - ok",
+        "jogo": "Mortal Kombat Trilogy ",
         "desc": ""
     },
     {
@@ -3302,7 +3323,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Gran Turismo 2 - ok",
+        "jogo": "Gran Turismo 2 ",
         "desc": ""
     },
     {
@@ -3314,7 +3335,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Soul Blade - ok",
+        "jogo": "Soul Blade ",
         "desc": ""
     },
     {
@@ -3326,7 +3347,7 @@ function animaEntradaResultado (i) {
     {
         "console": "PS1",
         "estacao": "x2",
-        "jogo": "Bomberman World - ok",
+        "jogo": "Bomberman World ",
         "desc": ""
     },
     {
