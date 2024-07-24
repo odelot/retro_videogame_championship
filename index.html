@@ -1,0 +1,4221 @@
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/keydrown/1.2.8/keydrown.min.js"></script>
+<script src="slotmachine.js"></script>
+<script>
+
+  jQuery.fn.shake = function (interval, distance, times) {
+    interval = typeof interval == "undefined" ? 75 : interval;
+    distance = typeof distance == "undefined" ? 5 : distance;
+    times = typeof times == "undefined" ? 3 : times;
+    let jTarget = $(this);
+    //jTarget.css('position','absolute');
+    oldLeft = jTarget.css('left');
+    oldTop = jTarget.css('top');
+    originLeft = parseInt(oldLeft);
+    originTop = parseInt(oldTop);
+    for (var iter = 0; iter < (times + 1); iter++) {
+      //jTarget.animate({ left: originLeft + ((iter%2==0 ? distance : distance*-1))}, interval);
+      jTarget.animate({ top: originTop + ((iter % 2 == 0 ? distance : distance * -1)) }, interval);
+    }
+    return jTarget.animate({ left: oldLeft, top: oldTop }, interval);
+  }
+
+  function hsvToRgb(h, s, v) {
+    let r, g, b, i, f, p, q, t;
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+      case 0: r = v, g = t, b = p; break;
+      case 1: r = q, g = v, b = p; break;
+      case 2: r = p, g = v, b = t; break;
+      case 3: r = p, g = q, b = v; break;
+      case 4: r = t, g = p, b = v; break;
+      case 5: r = v, g = p, b = q; break;
+    }
+    const rgbToHex = (x) => {
+      const hex = Math.round(x * 255).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    };
+    return "#" + rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
+  }
+
+
+  const estadoAplicativo = {
+    estadoSorteio: 0,
+    partidaEmConfiguracao: 0,
+    ligaSorteio: false,
+    mostrouFinalistas: false,
+    
+
+  }
+
+
+  const evento = {
+    rodadaAtual: 1,
+    participantes: [
+      { nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "blake.png" },
+      { nome: "Tom Hanks", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "tom.png" },
+      { nome: "Brad Pitt", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "brad.png" },
+      { nome: "Keanu Reeves", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "keanu.png" },
+      { nome: "Jennifer Lopez", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "jennifer.png" },
+      { nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "julia.png" },
+      { nome: "Robert Downey Jr.", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "robert.png" },
+      { nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "aniston.png" },
+      { nome: "Henry Cavill", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "henry.png" },
+      { nome: "Scarlett Johansson", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "scarlett.png" },
+      { nome: "Leonardo DiCaprio", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "leo.png" },
+      { nome: "Tom Cruise", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "cruise.png" },
+      { nome: "Sandra Bullock", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "sandra.png" },
+      { nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "chris.png" },
+      { nome: "Angelina Jolie", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "angelina.png" },
+      { nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "george.png" },
+    ],
+    rodadas: new Array(4),
+  }
+
+  const listaDeVideoGames = [
+    { nome: "Dreamcast", imagem: "dreamcast.png" },
+    { nome: "Game Boy", imagem: "gameboy.png" },
+    { nome: "GameCube", imagem: "gamecube.png" },
+    { nome: "GBA", imagem: "gba.png" },
+    { nome: "GBC", imagem: "gbc.png" },
+    { nome: "Mega Drive", imagem: "megadrive.png" },
+    { nome: "N64", imagem: "n64.png" },
+    { nome: "PS1", imagem: "ps1.png" },
+    { nome: "PS2", imagem: "ps2.png" },
+    { nome: "NES", imagem: "nes.png" },
+    { nome: "SNES", imagem: "snes.png" },
+    { nome: "Virtual Boy", imagem: "virtualboy.png" },
+    { nome: "Wii", imagem: "wii.png" },
+    { nome: "Xbox", imagem: "xbox.png" }
+  ];
+
+  const slotMachine = {
+    'speed': 150,
+    'confronto': {
+      'machine': null,
+      'running': false
+    },
+    'console': {
+      'machine': null,
+      'running': false
+    },
+    'player1': {
+      'machine': null,
+      'running': false
+    },
+    'player2': {
+      'machine': null,
+      'running': false
+    },
+    'player3': {
+      'machine': null,
+      'running': false
+    },
+    'player4': {
+      'machine': null,
+      'running': false
+    },
+    'jogo': {
+      'machine': null,
+      'running': false
+    }
+  }
+
+  function getNumParticipantes() {
+    return evento.participantes.length;
+  }
+
+
+  function configuraConsolesComBaseNosJogos() {
+    const estacoesPorConsole = getEstacoesPorConsole(jogos);
+    listaDeVideoGames.forEach((console, i) => {
+      if (estacoesPorConsole[console.nome]) {
+        console.estacoes = estacoesPorConsole[console.nome];
+      }
+    });
+  }
+
+
+  function criaHTMLJogador(evento, jogador) {
+    const jogadorHTML = `
+        <div class='interrogacao player' meta-data='${jogador}'>
+          <div style="background-image: url(${evento.participantes[jogador].profileImg}); background-size:cover;"></div>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" meta-data='${jogador}' type="checkbox" value="">
+        </div>
+    `;
+    return jogadorHTML;
+
+  }
+
+
+
+  function criarHTMLJogadores(partida) {
+    const eventos = getEvento();
+    let leftPlayers = `
+      <div class="player1">
+        ${criaHTMLJogador(eventos, partida.player1)}
+      </div>`;
+    let rightPlayers = `
+      <div class="player2">
+        ${criaHTMLJogador(eventos, partida.player2)}
+      </div>`;
+    if (partida.player3 >= 0) {
+      leftPlayers += `
+        <div class="player3">
+          ${criaHTMLJogador(eventos, partida.player3)}
+        </div>`;
+    }
+    if (partida.player4 >= 0) {
+      rightPlayers += `
+        <div class="player4">
+          ${criaHTMLJogador(eventos, partida.player4)}
+        </div>`;
+    }
+
+
+    const jogadoresHTML = `
+    <div class="col-4 players">
+        <div class="row">
+          <div class="col-5 left-players">
+            ${leftPlayers}
+          </div>
+          <div class="col-2 versus">
+            <img src="versus.png" class="versus" />
+          </div>
+          <div class="col-5 right-players">
+            ${rightPlayers}
+          </div>
+        </div>
+      </div>
+    `;
+    return jogadoresHTML;
+
+  }
+
+  function criaPartida(partida, i) {
+    // console.log (partida);
+    const jogosFiltrados = obtemJogos(listaDeVideoGames[partida.console].nome, "x" + (partida.confronto + 2));
+    const jogo = jogosFiltrados[partida.jogo];
+    let partidaHTML = `
+        <div class="row partida">
+          <div class="row nomePartida">
+            <div class="col">
+            </div>
+            <div class="col-7 header">
+              <div class="col-8">
+              <p>
+                Jogo ${i + 1} - ${jogo.jogo} 
+              </p>
+            </div>
+            <div class="col-4 tipoJogo">
+              <p>
+                ${jogo.desc ? jogo.desc : "Duelo"}
+              </p>
+            </div>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+          <div class="row confronto">
+            <div class="col">
+            </div>
+            <div class="col-2 console">
+              <div class='interrogacao' meta-data='${partida.console}'>
+                <div class='opcao' style="background-image: url(${listaDeVideoGames[partida.console].imagem}); background-size:cover;"></div>
+              </div>
+            </div>
+            ${criarHTMLJogadores(partida)}
+            <div class="col-1 jogo">
+              <div class='interrogacao' meta-data='${partida.jogo}'>
+                <div class='opcao' style="background-color: red;">
+                  <p>${jogo.jogo}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-1 botoes">
+              <div>
+                <button type="button" class="btn btn-warning">Empatou!</button>
+              </div>
+              <div>
+                <button type="button" class="btn btn-success">Venceu!</button>
+              </div>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+          <div class="row separacao">
+            <div class="col">
+            </div>
+            <div class="col-4 linha2">
+            </div>
+            <div class="col">
+            </div>
+          </div>
+        </div>
+        `;
+    $(".partidas").append(partidaHTML);
+
+
+  }
+
+  function iniciarPartidas() {
+    
+    const rodadaAtual = getEvento().rodadaAtual;
+    if (rodadaAtual <= 4) {
+      $(".identificador-rodada").text("Rodada #" + rodadaAtual);
+    } else
+    if (rodadaAtual == 5) {
+      $(".identificador-rodada").text("Semi-Finais");
+    }
+    if (rodadaAtual == 6) {
+      $(".identificador-rodada").text("Grande Final");
+    }
+    const evento = getEvento();
+    $(".partidas").empty();
+    evento.rodadas[rodadaAtual - 1].forEach((partida, i) => {
+      criaPartida(partida, i);
+    });    
+    $('button').attr("disabled", false);
+    if (rodadaAtual >= 5) {
+      $(".btn-warning").attr("disabled", true);
+    } else {
+      $(".btn-warning").click(empatou);
+    }
+    $(".btn-success").click(venceu);
+    
+
+  }
+
+function iniciarVitoria() {
+  const imgPodio = [];
+  const imgPrimeiroLugar = getParticipantes().find(participante => {
+    if (participante.hasOwnProperty('rodada6') && participante.rodada6 == 24) {
+      return true;
+    }
+  }).profileImg;
+  imgPodio.push(imgPrimeiroLugar);
+  const imgSegundoLugar = getParticipantes().find(participante => {
+    if (participante.hasOwnProperty('rodada5') && participante.rodada5 == 12) {
+      if (imgPodio.indexOf(participante.profileImg) < 0) {
+        return true;
+      }
+    }
+  }).profileImg;
+  imgPodio.push(imgSegundoLugar);
+  const semifinalistas = getEvento().semifinalistas;
+  for (let i = 0; i < 4; i++) {
+    if (imgPodio.indexOf(semifinalistas[i].profileImg) < 0) {
+      imgPodio.push(semifinalistas[i].profileImg);
+    }
+  }
+  $('.primeiro-lugar').css("background-image", "url(" + imgPodio[0] + ")");
+  $('.segundo-lugar').css("background-image", "url(" + imgPodio[1] + ")");
+  $('.terceiro1-lugar').css("background-image", "url(" + imgPodio[2] + ")");
+  $('.terceiro2-lugar').css("background-image", "url(" + imgPodio[3] + ")");
+
+  let participantes = getParticipantes();
+  participantes.sort((a, b) => {
+    if (a.total === b.total) {
+      return a.nome.localeCompare(b.nome);
+    }
+    return b.total - a.total;
+  });
+
+  $(".box-resultados").empty();
+  const hue = (214 / (getNumParticipantes()+1)) / 360;
+  const saturation = 100 / 100;
+  const value = 97 / 100;
+  const color = hsvToRgb (hue,saturation,value);
+
+  const div = `
+      <div class="participante" meta-data="0" style="color: ${color};  ">
+        <div class="numero"></div>
+        <div class="nome">Placar Final</div>
+        <div class="pontos">Total</div>
+      </div>
+    `;
+
+  $(".box-resultados").append(div);
+  participantes.forEach((participante, i) => {
+    const hue = (214 - (i+1) * 214 / (getNumParticipantes()+1)) / 360;
+    const saturation = 100 / 100;
+    const value = 97 / 100;
+    const color = hsvToRgb (hue,saturation,value);
+    const div = `
+      <div class="participante" meta-data="${i+1}" style="color: ${color};  ">
+        <div class="numero">${i+1}.</div>
+        <div class="nome">${participante.nome}</div>
+        <div class="pontos">${participante.total}</div>
+      </div>
+    `;
+    $(".box-resultados").append(div);
+  });
+
+  for (let i = getNumParticipantes()+1; i< 20; i+=1) {
+    
+    const div = `
+      <div class="participante figurante" >
+        <div class="numero"></div>
+        <div class="nome">figurante</div>
+        <div class="pontos"></div>
+      </div>`;
+    $(".box-resultados").append(div);
+
+  }
+
+  setTimeout(tocaMusicaFundoVitoria,0);
+  setTimeout(function () {
+    $(".animacao-vitoria").fadeOut( function () {
+      $(".animacao-vitoria").css("display", "flex");
+      $(".animacao-vitoria").css("visibility", "hidden");
+    });
+    $(".podio").fadeIn(function () {
+
+      $(".podio").css ("opacity","1");
+      $(".primeiro-lugar").toggleClass('animate');
+      $(".congratulations").toggleClass('animate');
+      setTimeout (function () {
+        $(".segundo-lugar").toggleClass('animate');
+      }, 1400);
+      setTimeout (function () {
+        $(".terceiro1-lugar, .terceiro2-lugar").toggleClass('animate');
+      }, 2800);
+      setTimeout (function () { 
+        $(".box-resultados").animate({
+          "opacity": 1 }, 500, function () {
+          animaEntradaResultado(0)
+        });
+      }, 2800);
+    });    
+
+  }, 5000);
+}
+
+function reset() {
+  const tentativa1 = confirm("Tem certeza que quer resetar?");
+  if (tentativa1) {
+    const tentativa2 = confirm("Tem certeza que quer resetar mesmo?");
+    if (tentativa2) {
+      clear();
+      location.reload();
+    }
+  }
+
+}
+
+function animaEntradaResultado (i) {
+        const numParticipantes = getNumParticipantes();
+        if (i > numParticipantes) {
+          $(".reset").fadeIn().off().on("click",reset);
+
+          // liga o reset
+          return;
+        }
+        $(".box-resultados .participante[meta-data=" + i + "]").animate({
+          "margin-right": 0 }, 500, function () {
+          animaEntradaResultado(i + 1);
+        });
+      }
+
+
+  function iniciarPreSorteio () {
+    const video = document.getElementById("video");
+    $(video).css("display","block");
+    video.onended = function () {
+      $(video).css("display","none");
+      $(".telaPreSorteio").css("display","none");
+      $(".telaSorteio").css("display","flex");  
+      video.currentTime = 0;
+      iniciarSorteio();
+      
+    }
+    setTimeout(function () {
+      video.play();
+      tocaMusicaFundoSorteio ();
+      setTimeout(function () {
+        tocaChanceTime();
+      }, 5000);
+    }, 0);
+    //video.play ();
+
+  }
+
+  function pararPreSorteio () {
+
+  }
+
+  function iniciarPagina() {
+    configuraConsolesComBaseNosJogos();
+    //iniciaPartidas();
+    iniciarTabela();
+    //iniciarPreSorteio();
+    //iniciarSorteio();
+    //iniciarVitoria();
+
+
+  }
+
+  function clear() {
+    localStorage.clear();
+  }
+
+  // atualiza o total de pontos de cada participante
+  function atualizarTotais(participantes) {
+    participantes.forEach(participante => {
+      participante.total = participante.rodada1 + participante.rodada2 + participante.rodada3 + participante.rodada4;
+      if (participante.hasOwnProperty('rodada5')) {
+        participante.total += participante.rodada5;
+      }
+      if (participante.hasOwnProperty('rodada6')) {
+        participante.total += participante.rodada6;
+      }
+    });
+  }
+
+  function getEvento() {
+    if (!localStorage.getItem("evento")) {
+      localStorage.setItem("evento", JSON.stringify(evento));
+    }
+    return JSON.parse(localStorage.getItem("evento"));
+  }
+
+  function gravarEvento(evento) {
+    localStorage.setItem("evento", JSON.stringify(evento));
+  }
+
+  // obtem a lista de participantes do localStorage ja com os totais atualizados 
+  function getParticipantes() {
+    const evento = getEvento();
+    let array = evento.participantes;
+    atualizarTotais(array);
+    gravarEvento(evento);
+    return array;
+  }
+
+  function criarSemiFinais() {
+    const evento = getEvento();
+    const semifinalistas = evento.semifinalistas;
+    const semiFinais = [];
+    const participantes = getParticipantes();
+
+    for (let i = 0; i < semifinalistas.length; i += 2) {
+      const jogador1 = semifinalistas[i];
+      const jogador2 = semifinalistas[semifinalistas.length-1-i];
+      const partida = {
+        jogo: -1,
+        confronto: 0,
+        console: -1,
+        player1: participantes.findIndex(part => part.nome === jogador1.nome), 
+        player2: participantes.findIndex(part => part.nome === jogador2.nome),
+        player3: -1,
+        player4: -1
+      };
+      semiFinais.push(partida);
+    }
+    if (evento.rodadas.length < 5) {
+      evento.rodadas.push(semiFinais);
+    } else {
+      evento.rodadas[4] = semiFinais;
+    }
+    gravarEvento(evento);
+  }
+
+  function criarFinal() {
+    const evento = getEvento();
+    const finalistas = getFinalistas();
+    const final = [];
+    const participantes = getParticipantes();
+
+    for (let i = 0; i < finalistas.length; i += 2) {
+      const jogador1 = finalistas[i];
+      const jogador2 = finalistas[finalistas.length-1-i];
+      const partida = {
+        jogo: -1,
+        confronto: 0,
+        console: -1,
+        player1: participantes.findIndex(part => part.nome === jogador1.nome), 
+        player2: participantes.findIndex(part => part.nome === jogador2.nome),
+        player3: -1,
+        player4: -1
+      };
+      final.push(partida);
+    }
+    if (evento.rodadas.length < 6) {
+      evento.rodadas.push(final);
+    } else {
+      evento.rodadas[5] = final;
+    }
+    gravarEvento(evento);
+  }
+
+  function getFinalistas() {
+    const evento = getEvento();
+    const participantes = getParticipantes();
+    const finalistas = [];
+    participantes.forEach (participante => {
+      if (participante.hasOwnProperty('rodada5') && participante['rodada5'] == 12 ) {
+        finalistas.push(participante);
+      }
+    });
+    
+    return finalistas;
+  }
+
+  function proximaRodada () {
+    const evento = getEvento();
+      if (evento.rodadaAtual == 6) {
+        const finalistas = getFinalistas();
+        alert ("Grande Final entre " + finalistas[0].nome + " e " + finalistas[1].nome + "!!!");
+        criarFinal ();
+      }
+      if (evento.rodadaAtual == 5) {
+        // selecionar os 4 primeiros
+        let primeiros = [];
+        const participantes = getParticipantes();
+        const participantesOrdenados = JSON.parse(JSON.stringify(participantes)).sort((a, b) => {
+          if (a.total === b.total) {
+            return a.nome.localeCompare(b.nome);
+          }
+          return b.total - a.total;
+        });
+        let pontuacaoAtual = -1;
+        participantesOrdenados.forEach((participante, i) => {
+          const pontuacaoParticipante = participante.total;
+          if (pontuacaoAtual != pontuacaoParticipante) {
+            pontuacaoAtual = pontuacaoParticipante;
+            if (primeiros.length < 4)
+              primeiros.push(participante);
+            else {
+              return;
+            }            
+          } else {
+            primeiros.push(participante);
+          }
+        });
+        if (primeiros.length > 4) {
+          // q caraio, vamos ter que sortear os empatados
+          const pontuacaoEmpatada = primeiros[primeiros.length-1].total;          
+          const empatados = primeiros.filter(participante => participante.total === pontuacaoEmpatada);
+          const naoEmpatados = primeiros.filter(participante => participante.total !== pontuacaoEmpatada);
+          primeiros = naoEmpatados;
+          while (primeiros.length < 4) {
+            const idx = Math.floor(Math.random() * empatados.length);
+            primeiros.push(empatados[idx]);
+            empatados.splice(idx, 1);
+          }          
+        }
+        evento.semifinalistas = primeiros;
+        gravarEvento(evento);        
+
+        if (!estadoAplicativo.mostrouFinalistas) {
+          criarSemiFinais();
+          tocaTambores (function () {
+            primeiros.forEach (participante => {
+              const participanteIdx = evento.participantes.findIndex(part => part.nome === participante.nome);
+              $(".participante[meta-data=" + participanteIdx + "]").css("background-color", "rgba(255, 255, 255, 0.2)");
+            });
+            estadoAplicativo.mostrouFinalistas = true;
+          });
+          return;
+        }        
+        
+      }
+      $(".telaTabela").fadeOut(function () {
+        pararTabela ();
+        $(".telaPreSorteio").fadeIn();
+        iniciarPreSorteio();
+      });
+  }
+
+  function pararTabela () {
+    paraMusicaFundoTabela();
+  }
+
+  // preenche a tabela de participantes na pagina
+  function iniciarTabela() {
+    //limpa tabela
+    setTimeout(tocaMusicaFundoTabela,200);
+    $(".participante").remove();
+    $(".proxima-rodada").off("click");
+    $(".proxima-rodada").on("click",proximaRodada);
+    const participantes = getParticipantes();
+    const participantesOrdenados = JSON.parse(JSON.stringify(participantes)).sort((a, b) => {
+      if (a.total === b.total) {
+        return a.nome.localeCompare(b.nome);
+      }
+      return b.total - a.total;
+    });
+    participantesOrdenados.forEach((element, i) => {
+      // HSV colors 214-0 100 97
+      const hue = (214 - i * 214 / getNumParticipantes()) / 360;
+      const saturation = 100 / 100;
+      const value = 97 / 100;
+      const participanteIdx = participantes.findIndex(participante => participante.nome === element.nome);
+
+      const npontos = Math.round(14 - ((element.nome.length + Math.floor((i + 1) / 10) + 1) * 0.5));
+      const pontos = " .".repeat(npontos);
+      //console.log(hue + " " + saturation + " " + value);
+      const color = hsvToRgb(hue, saturation, value);
+      const participante = `
+        <div class='row participante' meta-data='${participanteIdx}' style='color: ${color}'>
+          <div class='col'></div>
+          <div class='col-3 nome'><p>${(i + 1)}  ${element.nome}</p><p>${pontos}</p></div>
+          <div class='col-3 pontos'>
+            <p>${element.rodada1}</p>
+            <p>${element.rodada2}</p>
+            <p>${element.rodada3}</p>
+            <p>${element.rodada4}</p>
+            <p>${element.total}</p> 
+          </div>
+          <div class='col'></div>
+        </div>`;
+      $(participante).appendTo(".tabelaCompetidores");
+    });
+
+
+  }
+
+  function configurarDK() {
+    const canvas = document.getElementById("canvas");
+    const scaleX = canvas.width / 1920;
+    const scaleY = canvas.height / 1080;
+    let currentY = canvas.height - 160 * scaleY;
+    const ctx = canvas.getContext("2d");
+    let currentX = canvas.width / 2 + 500 * scaleX;
+
+    let jump;
+    kd.ENTER.down(function () {
+      if (jump) {
+        return;
+      }
+      if (estadoAplicativo.estadoSorteio == 0) {
+        tocaDK();
+      }
+      //if (estadoAplicativo.estadoSorteio % 2 == 0) {
+      tocaJump();
+      //}
+
+      jump = {
+        start: {
+          x: currentX,
+          y: currentY
+        },
+        control: {
+          x: currentX,
+          y: currentY - 95
+        },
+        end: {
+          x: currentX,
+          y: currentY
+        },
+        t: 0
+      };
+    });
+    kd.run(function () {
+      kd.tick();
+    });
+
+    let dk;
+    if (document.getElementById("dk") != null) {
+      dk = document.getElementById("dk");
+    } else {
+      dk = new Image();
+    }
+    dk.id = "dk";
+    dk.src = "dk.png";
+
+    dk.width = 275 * scaleX;
+    dk.height = 275 * scaleY;
+
+    function animate() {
+
+      if (!estadoAplicativo.ligaSorteio) {
+        return;
+      }
+      // even as we're executing this current animation loop
+      // request another loop for next time
+      requestAnimationFrame(animate);
+
+      if (jump) {
+
+        const pos = getQuadraticBezierXYatT(jump.start, jump.control, jump.end, jump.t / 100);
+        currentX = pos.x;
+        currentY = pos.y;
+
+        //
+        jump.t += 4;
+        if (jump.t == 56) {
+          $(".exclamacao").shake();
+          maquinaEstadoSorteio();
+
+        }
+        if (jump.t > 100) {
+          jump = null;
+        }
+
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(dk, currentX - dk.width, currentY - dk.height, dk.width, dk.height);
+
+    }
+    animate();
+  }
+
+  const audioOn = true;
+
+  function tocaMusicaFundoSorteio() {
+    if (!audioOn)
+      return;
+    estadoAplicativo.backgroundSorteioAudio = new Audio('57. Chance Time.mp3');
+    estadoAplicativo.backgroundSorteioAudio.autoplay = true;
+    estadoAplicativo.backgroundSorteioAudio.loop = true;
+    estadoAplicativo.backgroundSorteioAudio.play();
+  }
+
+  function tocaMusicaFundoTabela() {
+    if (!audioOn)
+      return;
+    estadoAplicativo.backgroundTabelaAudio = new Audio("17 - Mario Ranks.mp3");
+    estadoAplicativo.backgroundTabelaAudio.autoplay = true;
+    estadoAplicativo.backgroundTabelaAudio.loop = true;
+    estadoAplicativo.backgroundTabelaAudio.play();
+  }
+
+  function paraMusicaFundoTabela() {
+    if (!audioOn)
+      return;
+    estadoAplicativo.backgroundTabelaAudio.pause();
+  }
+
+
+  function tocaMusicaFundoVitoria() {
+    if (!audioOn)
+      return;
+    estadoAplicativo.backgroundVitoria = new Audio('25 - Tournament Win.mp3');
+    estadoAplicativo.backgroundVitoria.autoplay = true;
+    estadoAplicativo.backgroundVitoria.loop = true;
+    estadoAplicativo.backgroundVitoria.play();
+  }
+
+
+  function paraMusicaFundoSorteio() {
+    if (!audioOn)
+      return;
+    estadoAplicativo.backgroundSorteioAudio.pause();
+  }
+
+  function tocaChanceTime() {
+    if (!audioOn)
+      return;
+    const audio = new Audio('chance_time_voice.mp3');
+    audio.play();
+  }
+
+  function tocaTambores(f) {
+    if (!audioOn)
+      return;
+    const audio = new Audio('tambores.mp3');
+    audio.onended = f;
+    audio.play();
+  }
+
+  function tocaJump() {
+    if (!audioOn)
+      return;
+    const audio = new Audio('smw_stomp_no_damage.wav');
+    audio.play();
+
+  }
+
+  function tocaDK() {
+    if (!audioOn)
+      return;
+    let random = Math.ceil(Math.random() * 4)
+    const audio = new Audio('jump' + random + '.mp3');
+    audio.play();
+  }
+
+  function tocaPartidaSorteada() {
+    if (!audioOn)
+      return;
+    const audio = new Audio('partida_sorteada.wav');
+    audio.play();
+  }
+
+  function iniciaConfiguracaoPartida() {
+    let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
+    let rodadaAtual = getEvento().rodadaAtual;
+    if (!evento.rodadas[rodadaAtual - 1]) {
+      evento.rodadas[rodadaAtual - 1] = new Array();
+    }
+    if (!evento.rodadas[rodadaAtual - 1][partidaEmConfiguracao]) {
+      evento.rodadas[rodadaAtual - 1][partidaEmConfiguracao] = { jogo: -1, player1: -1, player2: -1, player3: -1, player4: -1, console: -1, confronto: -1 };
+    }
+  }
+
+
+  async function atualizarSorteioFinais () {
+    const evento = getEvento();
+    let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
+    const rodadaAtual = getEvento().rodadaAtual;
+
+    if (rodadaAtual >= 5) {
+      const semiFinais = evento.rodadas[rodadaAtual-1];
+      const partida = semiFinais[partidaEmConfiguracao];
+      const participantes = getParticipantes();
+      const player1 = partida.player1;
+      const player2 = partida.player2;
+      const confronto = partida.confronto;
+      await iniciaPlayer(1, [getHTMLdeUmParticipante(participantes[player1], player1, 0)]);
+      paraPlayer(1);
+      await iniciaPlayer(2, [getHTMLdeUmParticipante(participantes[player2], player2, 0)]);
+      paraPlayer(2);
+      iniciaSlotMachine('confronto', [getHTMLdeUmConfronto(confronto, confronto, 0)]);
+      paraConfronto();
+      return true;
+    }
+    return false;
+  }
+
+  function atualizarPartidaEmConfiguração(objetoSorteio) {
+    let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
+    let rodadaAtual = getEvento().rodadaAtual;
+    // para cada propriedade do objeto, atualiza a propriedade correspondente na partida em configuração, caso ela tenha sido informada
+    for (const prop in objetoSorteio) {
+      if (objetoSorteio.hasOwnProperty(prop)) {
+        evento.rodadas[rodadaAtual - 1][partidaEmConfiguracao][prop] = objetoSorteio[prop];
+      }
+    }
+  }
+
+  function consoleJaSorteado(consoleIdx) {
+    let rodadaAtual = getEvento().rodadaAtual;
+    let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
+    let numPartidasExistentes = evento.rodadas[rodadaAtual - 1].length
+    for (let i = 0; i < numPartidasExistentes; i++) {
+      const partida = evento.rodadas[rodadaAtual - 1][i];
+      if (partida.console === consoleIdx) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function participantesNaoSorteados() {
+    let acc = 0;
+    let rodadaAtual = getEvento().rodadaAtual;
+    let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
+    let numPartidasExistentes = evento.rodadas[rodadaAtual - 1].length
+    for (let i = 0; i < numPartidasExistentes; i++) {
+      const partida = evento.rodadas[rodadaAtual - 1][i];
+      for (let j = 0; j < getNumParticipantes(); j += 1) {
+        if (partida.player1 === j || partida.player2 === j || partida.player3 === j || partida.player4 === j) {
+          acc += 1;
+        }
+      }
+    }
+    return getNumParticipantes() - (acc - 2); // somando 2 pq a gente sorteia 2 antes de sortear console e confronto
+
+  }
+
+  function participanteJaSorteado(participanteIdx) {
+    let rodadaAtual = getEvento().rodadaAtual;
+    let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
+    let numPartidasExistentes = evento.rodadas[rodadaAtual - 1].length
+    for (let i = 0; i < numPartidasExistentes; i++) {
+      const partida = evento.rodadas[rodadaAtual - 1][i];
+      if (partida.player1 === participanteIdx || partida.player2 === participanteIdx || partida.player3 === participanteIdx || partida.player4 === participanteIdx) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async function maquinaEstadoSorteio() {
+    const faster = 25;
+    const rodadaAtual = getEvento().rodadaAtual;
+    switch (estadoAplicativo.estadoSorteio) {
+      case 0:
+        const estamosNasFinais = await atualizarSorteioFinais (); 
+        if (estamosNasFinais) {
+          estadoAplicativo.estadoSorteio = 4;
+          break;
+        }
+
+        iniciaConfiguracaoPartida();
+        estadoAplicativo.estadoSorteio = 1;
+        iniciaPlayer1();
+        break;
+      case 1:
+        estadoAplicativo.estadoSorteio = 2
+        const player1 = paraPlayer1();
+        atualizarPartidaEmConfiguração({ player1: player1 });
+        slotMachine.speed -= faster * 2;
+        break;
+      case 2:
+        estadoAplicativo.estadoSorteio = 3;
+        iniciaPlayer2();
+        break;
+      case 3:
+        estadoAplicativo.estadoSorteio = 4;
+        const player2 = paraPlayer2();
+        atualizarPartidaEmConfiguração({ player2: player2 });
+        slotMachine.speed -= faster;
+        break;
+      case 4:
+        estadoAplicativo.estadoSorteio = 5;
+        iniciaConsoles();
+        break;
+      case 5:
+        estadoAplicativo.estadoSorteio = 6;
+        if (rodadaAtual >= 5) {
+          estadoAplicativo.estadoSorteio = 12;
+        }
+        const consoleEscolhido = paraConsoles();
+        atualizarPartidaEmConfiguração({ console: consoleEscolhido });
+        slotMachine.speed -= faster;
+        break;
+      case 6:
+        estadoAplicativo.estadoSorteio = 7;
+        iniciaConfronto();
+        break;
+      case 7: {
+        const confronto = paraConfronto();
+        slotMachine['confronto'].confronto = confronto;
+        atualizarPartidaEmConfiguração({ confronto: confronto });
+        slotMachine.speed -= faster;
+        if (confronto > 0) {
+          estadoAplicativo.estadoSorteio = 8;
+        } else {
+          estadoAplicativo.estadoSorteio = 12;
+        }
+        break;
+      }
+      case 8:
+        estadoAplicativo.estadoSorteio = 9;
+        iniciaPlayer3();
+        break;
+      case 9: {
+        const confronto = slotMachine['confronto'].confronto;
+        if (confronto > 1) {
+          estadoAplicativo.estadoSorteio = 10;
+        } else {
+          estadoAplicativo.estadoSorteio = 12;
+        }
+        const player3 = paraPlayer3();
+        atualizarPartidaEmConfiguração({ player3: player3 });
+        break;
+      }
+      case 10:
+        estadoAplicativo.estadoSorteio = 11;
+        iniciaPlayer4();
+        break;
+      case 11:
+        estadoAplicativo.estadoSorteio = 12;
+        let player4 = paraPlayer4();
+        atualizarPartidaEmConfiguração({ player4: player4 });
+        break;
+      case 12:
+        estadoAplicativo.estadoSorteio = 13;
+        iniciaJogos();
+        break;
+      case 13:
+        estadoAplicativo.estadoSorteio = 14;
+        const jogo = paraJogos();
+        atualizarPartidaEmConfiguração({ jogo: jogo });
+        tocaPartidaSorteada();
+        gravarEvento(evento);
+        break;
+      case 14:
+        limpaSlotMachine();
+        estadoAplicativo.estadoSorteio = 0;
+        estadoAplicativo.partidaEmConfiguracao++;
+        let sorteiosFinais = false;        
+        if (rodadaAtual== 5 && estadoAplicativo.partidaEmConfiguracao == 2) {
+          sorteiosFinais = true;
+        } else {
+          if (rodadaAtual == 6 && estadoAplicativo.partidaEmConfiguracao == 1) {
+            sorteiosFinais = true;
+          }          
+        }
+        if ((participantesNaoSorteados() - 2) == 0 || sorteiosFinais) {
+          estadoAplicativo.partidaEmConfiguracao = 0;
+          gravarEvento(evento);          
+          $(".telaSorteio").fadeOut(function () {
+            iniciarPartidas();
+            pararSorteio ();
+            $(".telaPartidas").fadeIn();
+          });
+
+        }
+        break;
+
+    }
+  }
+
+  function limpaSlotMachine() {
+    $(".player3").fadeOut(function () {
+      $(this).css('display', 'block');
+      $(this).css('visibility', 'hidden');
+    });
+    $(".player4").fadeOut(function () {
+      $(this).css('display', 'block');
+      $(this).css('visibility', 'hidden');
+    });
+    slotMachine.speed = 150;
+    for (const [key, value] of Object.entries(slotMachine)) {
+      value.machine = null;
+      value.running = false;
+      $("#" + key).empty();
+      $("#" + key).append('<div class="opcao question"></div>');
+    }
+  }
+
+  function iniciarSorteio() {
+    // atualiza evento global (gambi) - o sorteio usa o evento global para não ter que gravar cada sorteio
+    evento = getEvento();
+
+    /*$(".telaSorteio").show(function(){
+      $(".telaSorteio").css("display", "flex");
+    });*/
+    estadoAplicativo.ligaSorteio = true;
+    estadoAplicativo.slotmachineAudio = new Audio('slotmachine.wav');
+    estadoAplicativo.slotmachineAudio.autoplay = false;
+    configurarDK();
+    
+  }
+
+  function pararSorteio () {
+    estadoAplicativo.ligaSorteio = false;
+    paraMusicaFundoSorteio();
+    kd.stop();
+
+  }
+
+  async function iniciaSlotMachine(id, lista) {
+    const element = document.getElementById(id);
+    $(element).empty();
+    lista.forEach((opcao, i) => {
+      $(opcao).appendTo(element);
+    });
+    slotMachine[id].machine = new SlotMachine(element, { active: lista.length, delay: slotMachine.speed });
+    slotMachine[id].running = true;
+    await (async function run() {
+      if (!slotMachine[id].running) {
+        return;
+      }
+      new Audio('slotmachine.wav').play();
+      //estadoAplicativo.slotmachineAudio.play();
+      await slotMachine[id].machine.prev();
+      await setTimeout(run, 0);
+    })();
+    $("." + id + " .question").slideUp();
+  }
+
+  function paraSlotMachine(id) {
+    slotMachine[id].running = false;
+    const sorteado = slotMachine[id].machine.active;
+    const sorteadoMetadata = $("#" + id).find("[slot-data=" + sorteado + "]").attr("meta-data");
+    // console.log(sorteadoMetadata);
+    return parseInt(sorteadoMetadata);
+  }
+
+
+  async function iniciaConfronto() {        
+    let naoSorteados = participantesNaoSorteados();
+    // console.log(naoSorteados);
+    let filtrar2x = false;
+    let filtrar3x = false;
+    let filtrar4x = false;
+    if (naoSorteados == 5) {
+      filtrar4x = true;
+    }
+    if (naoSorteados == 4) {
+      filtrar3x = true;
+    }
+    if (naoSorteados == 3) {
+      filtrar2x = true;
+      filtrar4x = true;
+    }
+    if (naoSorteados == 2) {
+      filtrar3x = true;
+      filtrar4x = true;
+    }
+    const rodadaAtual = getEvento().rodadaAtual;
+    const consoleIdx = evento.rodadas[rodadaAtual - 1][estadoAplicativo.partidaEmConfiguracao].console;
+    const consoleEscolhido = listaDeVideoGames[consoleIdx];
+    const listaOpcoesConfronto = [];
+    let add = 0;
+    consoleEscolhido.estacoes.forEach((estacao, i) => {
+      if (filtrar2x && (i + 2) == 2) {
+        return;
+      }
+      if (filtrar4x && (i + 2) == 4) {
+        return;
+      }
+      if (filtrar3x && (i + 2) == 3) {
+        return;
+      }
+      const opcao = getHTMLdeUmConfronto(i, add++);
+      listaOpcoesConfronto.push(opcao);
+    });
+    iniciaSlotMachine('confronto', listaOpcoesConfronto);
+  }
+
+  function getHTMLdeUmConfronto(confronto, slot_data) {
+    return "<div class='opcao x" + (confronto + 2) + "' meta-data='" + confronto + "' slot-data='" + slot_data + "'></div>";
+  }
+
+  function paraConfronto() {
+    const sorteado = paraSlotMachine('confronto');
+    if (sorteado === 1) {
+      $(".player3").css('visibility', 'visible');
+      $(".player3").fadeIn();
+    } else if (sorteado === 2) {
+      $(".player3").css('visibility', 'visible');
+      $(".player4").css('visibility', 'visible');
+      $(".player3").fadeIn();
+      $(".player4").fadeIn();
+    }
+    return sorteado;
+  }
+
+  async function iniciaConsoles() {
+    const listaOpcoesVideoGames = new Array();
+    let add = 0;
+    let filtrarImpares = false;
+    let naoSorteados = participantesNaoSorteados();
+    if (naoSorteados <= 5 && naoSorteados % 2 == 1) {
+      filtrarImpares = true;
+    }
+    listaDeVideoGames.forEach((element, i) => {
+      if (!consoleJaSorteado(i)) {
+        if (filtrarImpares) {
+          if (!element.estacoes.find(estacao => estacao == 'x3')) {
+            return;
+          }
+        }
+        const opcao = "<div class='opcao' meta-data='" + i + "' slot-data='" + add++ + "' style='background-image: url(" + element.imagem + "); background-size:cover;'></div>";
+        listaOpcoesVideoGames.push(opcao);
+      }
+    });
+    iniciaSlotMachine('console', listaOpcoesVideoGames);
+  }
+
+  function paraConsoles() {
+    return paraSlotMachine('console');
+  }
+
+
+  async function iniciaPlayer(playerNum, listaParticipantes) {
+    const playerId = "player" + playerNum;
+    iniciaSlotMachine(playerId, listaParticipantes);
+  }
+
+  function paraPlayer(playerNum) {
+    const playerId = "player" + playerNum;
+    return paraSlotMachine(playerId);
+  }
+
+  function getHTMLParticipantesNaoSorteados() {
+    const evento = getEvento();
+    const participantes = evento.participantes;
+    const numParticipantes = evento.participantes.length;
+    const participantesNaoSorteados = new Array();
+    let add = 0;
+    for (let i = 0; i < numParticipantes; i++) {
+      if (!participanteJaSorteado(i)) {
+        const opcao = getHTMLdeUmParticipante(participantes[i], i, add++);         
+        participantesNaoSorteados.push(opcao);
+      }
+    }
+    return participantesNaoSorteados;
+
+  }
+
+  function getHTMLdeUmParticipante (participante, meta_data, slot_data) {
+    return "<div class='opcao' meta-data='" + meta_data + "' slot-data='" + slot_data + "'  style='background-image: url(" + participante.profileImg + "); background-size:cover;'></div>";
+  }
+
+  async function iniciaPlayer1() {
+    iniciaPlayer(1, getHTMLParticipantesNaoSorteados());
+  }
+
+  function paraPlayer1() {
+    return paraPlayer(1);
+  }
+
+  async function iniciaPlayer2() {
+    iniciaPlayer(2, getHTMLParticipantesNaoSorteados());
+  }
+
+  function paraPlayer2() {
+    return paraPlayer(2);
+  }
+
+
+  async function iniciaPlayer3() {
+    iniciaPlayer(3, getHTMLParticipantesNaoSorteados());
+  }
+
+  function paraPlayer3() {
+    return paraPlayer(3);
+  }
+
+  async function iniciaPlayer4() {
+    iniciaPlayer(4, getHTMLParticipantesNaoSorteados());
+  }
+
+  function paraPlayer4() {
+    return paraPlayer(4);
+  }
+
+  function getEstacoesPorConsole(jogos) {
+    const estacoesPorConsole = {};
+
+    jogos.forEach(jogo => {
+      if (!estacoesPorConsole[jogo.console]) {
+        estacoesPorConsole[jogo.console] = [];
+      }
+      if (!estacoesPorConsole[jogo.console].includes(jogo.estacao)) {
+        estacoesPorConsole[jogo.console].push(jogo.estacao);
+      }
+    });
+
+    return estacoesPorConsole;
+  }
+
+  async function iniciaJogos() {
+    const listaOpcoesJogos = new Array();
+    const rodadaAtual = getEvento().rodadaAtual;
+    const consoleIdx = evento.rodadas[rodadaAtual - 1][estadoAplicativo.partidaEmConfiguracao].console;
+    const console = listaDeVideoGames[consoleIdx].nome;
+    const confrontoIdx = evento.rodadas[rodadaAtual - 1][estadoAplicativo.partidaEmConfiguracao].confronto;
+    const confronto = "x" + (confrontoIdx + 2);
+    const jogosFiltrados = obtemJogos(console, confronto);
+    const numeroJogos = jogosFiltrados.length;
+    let add = 0;
+    jogosFiltrados.forEach((element, i) => {
+      const cor = hsvToRgb(i / numeroJogos, 1, 1);
+      const opcao = "<div class='opcao opcaoJogo'  meta-data='" + i + "' slot-data='" + add++ + "' style='background-color: " + cor + "'><div><p>" + element.jogo + "</p></div></div>";
+      listaOpcoesJogos.push(opcao);
+    });
+    iniciaSlotMachine('jogo', listaOpcoesJogos);
+
+  }
+
+  function paraJogos() {
+    return paraSlotMachine('jogo');
+  }
+
+
+  function obtemJogos(console, confronto) {
+    return jogos.filter(jogo => jogo.console === console && jogo.estacao === confronto);
+  }
+
+  function venceu() {
+    let evento = getEvento();
+    let participantes = evento.participantes;
+    $(this).parents(".partida").find(".botoes button").attr("disabled", true);
+    let ganhadores = ""
+    let ganhadoresIdx = [];
+    let perdedoresIdx = [];
+    $(this).parents(".partida").find("input[type=checkbox]:checked").each(function (i, element) {
+      const jogador = $(element).attr("meta-data");
+      ganhadores += participantes[jogador].nome + " / ";
+      ganhadoresIdx.push(jogador);
+    });
+    $(this).parents(".partida").find("input[type=checkbox]:not(:checked)").each(function (i, element) {
+      const jogador = $(element).attr("meta-data");
+      perdedoresIdx.push(jogador);
+    });
+    if (ganhadores.length > 0) {
+      ganhadores = ganhadores.substring(0, ganhadores.length - 2);
+      let pergunta;
+      if (ganhadoresIdx.length > 1) {
+        pergunta = "(" + ganhadores + ") venceram a partida?";
+      } else {
+        pergunta = ganhadores + " venceu a partida?";
+      }
+      const result = confirm(pergunta);
+      if (result) {
+        ganhadoresIdx.forEach(idx => {
+          const numRodada = evento.rodadaAtual;
+          if (numRodada <= 4) {
+            participantes[idx]["rodada" + numRodada] = 3;
+          } else if (numRodada == 5) {
+            participantes[idx]["rodada" + numRodada] = 12;
+          } else if (numRodada ==6) {
+            participantes[idx]["rodada" + numRodada] = 24;
+          }          
+        });
+        perdedoresIdx.forEach(idx => {
+          const numRodada = evento.rodadaAtual;
+          if (numRodada <= 4) {
+            participantes[idx]["rodada" + numRodada] = 0;
+          } else if (numRodada == 5) {
+            participantes[idx]["rodada" + numRodada] = 6;
+          } else if (numRodada == 6) {
+            participantes[idx]["rodada" + numRodada] = 18;
+          }          
+        });
+        gravarEvento(evento);
+        $(this).parents(".partida").fadeOut(devoIrParaTabela);
+      } else {
+        $(this).parents(".partida").find(".botoes button").attr("disabled", false);
+      }
+    } else {
+      alert("Selecione o resultado da partida!");
+      $(this).parents(".partida").find(".botoes button").attr("disabled", false);
+    }
+  }
+
+
+  function empatou() {
+    let evento = getEvento();
+    let participantes = evento.participantes;
+    $(this).parents(".partida").find(".botoes button").attr("disabled", true);
+    let ganhadoresIdx = [];
+    $(this).parents(".partida").find("input[type=checkbox]").each(function (i, element) {
+      const jogador = $(element).attr("meta-data");    
+      ganhadoresIdx.push(jogador);
+    });
+    const result = confirm("Tem certeza que a partida empatou?");
+    if (result) {
+      ganhadoresIdx.forEach(idx => {
+        const numRodada = evento.rodadaAtual;
+        participantes[idx]["rodada" + numRodada] = 1;
+      });
+      gravarEvento(evento);
+      $(this).parents(".partida").fadeOut(devoIrParaTabela);
+    } else {
+      $(this).parents(".partida").find(".botoes button").attr("disabled", false);
+    }
+    
+  }
+
+  function devoIrParaTabela() {
+    if ($(".partida:visible").length == 0) {
+      alert("Todas as partidas foram finalizadas!");
+      let evento = getEvento();
+      evento.rodadaAtual++;
+      gravarEvento(evento);
+      if (evento.rodadaAtual > 6) {
+        $(".telaPartidas").fadeOut(function () {
+          $(".telaVitoria").fadeIn();
+          iniciarVitoria();
+        });
+      } else {
+        $(".telaPartidas").fadeOut(function () {
+          iniciarTabela();
+          $(".telaTabela").fadeIn();
+        });
+      }      
+    }
+  }
+
+
+  // get an x/y point along a quadratic bezier curve
+  function getQuadraticBezierXYatT(startPt, controlPt, endPt, T) {
+    var x = Math.pow(1 - T, 2) * startPt.x + 2 * (1 - T) * T * controlPt.x + Math.pow(T, 2) * endPt.x;
+    var y = Math.pow(1 - T, 2) * startPt.y + 2 * (1 - T) * T * controlPt.y + Math.pow(T, 2) * endPt.y;
+    return ({
+      x: x,
+      y: y
+    });
+  }
+
+  function ajusteAspectRatio() {
+    let correction = 1;
+    let w = window.innerWidth;
+    let h = w * 9 / 16;
+
+    $("body").css("width", w + "px");
+    $("body").css("height", h + "px");
+    if (estadoAplicativo.ligaSorteio) {
+      const canvas = document.getElementById("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      configurarDK();
+    }
+
+  }
+
+  // executar codigo js ao iniciar a pagina
+  document.addEventListener("DOMContentLoaded", function () {
+    iniciarPagina();
+
+    window.addEventListener('resize', () => {
+      ajusteAspectRatio();
+    });    
+    ajusteAspectRatio();
+  });
+
+
+
+
+
+  const autoReload = false;
+  if (autoReload) {
+    setInterval(function () {
+      location.reload();
+    }, 5000);
+  }
+
+</script>
+
+<style type="text/css">
+  @font-face {
+    font-family: "MarioKart";
+    src: url(super-mario-kart.ttf) format("truetype");
+  }
+
+
+
+
+  html,
+  body {
+    height: 100%;
+    width: 100%;
+    background-color: black;
+  }
+
+  html {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+  .telaPartidas .partidas {
+    overflow: scroll;
+    overflow-x: hidden;
+    position: absolute;
+    height: -webkit-fill-available;
+    width: 100%;
+  }
+
+  .row {
+    --bs-gutter-x: 0;
+  }
+
+  .strokeme {
+    text-shadow: -2px -2px 0 #FFF, 2px -2px 0 #FFF, -2px 2px 0 #FFF, 2px 2px 0 #FFF;
+  }
+
+  .titulo * {
+    display: inline-block;
+    color: #F80000;
+  }
+
+  .titulo p {
+    font-family: "MarioKart", Verdana, Tahoma;
+    text-shadow: -2px -2px 0 #FFF, 2px -2px 0 #FFF, -2px 2px 0 #FFF, 2px 2px 0 #FFF;
+    transform: scale(1, 2);
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  .subtitulo * {
+    font-family: "MarioKart", Verdana, Tahoma;
+    display: inline-block;
+  }
+
+  .subtitulo p {
+    color: #F8D0F0;
+    text-shadow: -2px -2px 0 #A80000, 2px -2px 0 #A80000, -2px 2px 0 #A80000, 2px 2px 0 #A80000;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-bottom: 0;
+  }
+
+  .cilindrada {
+    padding-left: 20px;
+
+  }
+
+  .total {
+    padding-left: 0px;
+    padding-right: 20px;
+  }
+
+  .round {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .cup {
+    padding-left: 50px;
+    padding-right: 30px;
+  }
+
+  .telaTabela,
+  .telaPartidas {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: url("fundo4x.png");
+  }
+
+  .telaVitoria {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url("fundoVitoria.png");
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .reset {
+    position: absolute;
+    bottom: 10%;
+    right: 10%;
+    display: none;
+  }
+
+  .congratulations {
+    background-image: url(congratulations.png);
+    background-size: contain;
+    transform: scale(0);
+    display: flex;
+    position: absolute;
+    background-position: center;
+    background-repeat: no-repeat;
+    top: 7%;
+    left: 0;
+    width: 100%;
+    height: 7%;
+    justify-content: center;
+    transition: all 5s;
+    text-align: center;
+  }
+  
+.box-resultados {
+  display: flex;
+  opacity: 0;
+  text-shadow: -1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999;
+  font-family: "MarioKart", Verdana, Tahoma;
+  /*border: 1px solid red;*/
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  display: block;
+  justify-content: center;
+  top: 16.5%;
+  align-items: center;
+  
+}
+.figurante .nome {
+  visibility: hidden;
+}
+
+.box-resultados .participante {
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /*border: 1px solid red;*/
+  padding-bottom: 0.75vh;
+  margin-right: -300vw;
+  
+}
+
+.box-resultados .participante .nome {
+    width: 40%;
+}
+
+.box-resultados .participante:nth-child(1) {
+  border-bottom: 2px solid black;
+}
+
+.box-resultados .participante:nth-child(odd) {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.box-resultados .participante:nth-child(even) {
+  background-color: rgba(128, 128, 128, 0.2);
+}
+
+  .primeiro-lugar, .segundo-lugar, .terceiro1-lugar, .terceiro2-lugar
+   {
+    transform: scale(0);
+    display: flex;
+    transition: all 5s;
+    justify-content: center;
+    align-items: center;
+    border: 5px solid black;
+}
+
+.primeiro-lugar.animate, .congratulations.animate {
+  transform: scale(1);
+}
+
+.segundo-lugar.animate {
+  transform: scale(0.7);
+}
+
+.terceiro1-lugar.animate, .terceiro2-lugar.animate {
+  transform: scale(0.35);
+}
+
+.primeiro-lugar {
+    position: relative;
+    display: flex;
+    /*top: -14%;
+    left: 45%;*/
+    top: 26%;
+    left: -15%;
+    z-index: 5;
+    width: 10%;
+    height: 16%;
+  }
+
+  .segundo-lugar {
+    position: relative;
+    display: flex;
+    /*top: -14%;
+    left: 45%;*/
+    top: 32%;
+    left: -32.5%;
+    z-index: 4;
+    width: 10%;
+    height: 16%;
+  }
+
+  .terceiro1-lugar {
+    position: relative;
+    display: flex;
+    /*top: -14%;
+    left: 45%;*/
+    top: 38%;
+    left: -29.2%;
+    z-index: 3;
+    width: 10%;
+    height: 16%;
+  }
+
+  .terceiro2-lugar {
+    position: relative;
+    display: flex;
+    /*top: -14%;
+    left: 45%;*/
+    top: 38%;
+    left: -35.8%;
+    z-index: 3;
+    width: 10%;
+    height: 16%;
+  }
+
+  .animacao-vitoria {
+   /* position: relative;
+    display: flex;
+    width: 31%;
+    top: 59%;
+    left: 35%;
+    z-index: 1;*/
+    position: relative;
+    display: flex;
+    width: 30%;
+    height: 40%;
+    
+    top: 29.5%; 
+    left: 35%;
+    z-index: 1;
+  }
+
+  .podio {
+    position: relative;
+    width: 30%;
+    height: 40%;
+    z-index: 2;
+    opacity: 0;
+    top: 29.5%;
+    left: 5%
+    /*position: relative;
+    width: 31%;
+    top: 17.5%;
+    left: 35%;
+    z-index: 2;
+    opacity: 0;*/
+  }
+  .banner {
+    padding-top: 5%;
+    padding-bottom: 25px;
+  }
+
+
+  .linha {
+    height: 12px;
+    background-image: url("mariokartline.png");
+  }
+
+  .linha2 {
+    padding-top: 1px;
+    height: 3px;
+    background-image: url("mariokartline2.png");
+    padding-bottom: 1px;
+  }
+
+  .titulo div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .participante {
+    font-size: 1.15rem !important;
+  }
+
+  .participante .nome {
+    width: 27%;
+  }
+
+  .participante .pontos {
+    width: 23%;
+  }
+
+  .participante p {
+    font-family: "MarioKart", Verdana, Tahoma;
+    text-shadow: -1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999
+  }
+
+  .participante div {
+    display: inline-flex;
+  }
+
+  .tabelaCompetidores .row:nth-child(6) {
+    padding-top: 10px;
+  }
+
+  .participante .nome p:first-child {
+    padding-left: 5px;
+    white-space: nowrap;
+  }
+
+  .participante .nome p:nth-child(2) {
+    padding-left: 5px;
+    white-space: pre;
+  }
+
+  .participante .pontos p {
+    width: 20%;
+    text-align: center;
+  }
+
+
+  .telaPreSorteio {
+    background-color: black;
+  }
+
+
+  .telaSorteio {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: black;
+    background-image: url("fundoSorteio.png");
+  }
+
+  .exclamacao {
+    /*position: absolute;
+    top: 405px;
+    left: 1000px;
+    scale: 130% 130%*/
+    position: relative;
+    width: 10%;
+    height: 14%;
+    top: 45%;
+    left: -8%;
+    margin: 0;
+  }
+
+  .interrogacao {
+    background-image: url("moldura.png");
+    /* background-size: cover; */
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  .telaSorteio .interrogacao {
+    background-image: url("moldura.png");
+    /*width: 160px;
+    height: 145px;*/
+    margin-left: -100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 10.2%;
+    position: relative;
+    z-index: 1;
+    height: 16.4%;
+
+  }
+
+  .interrogacao1 {
+    /*top: 435px;
+    left: 690px;*/
+    top: 50.5%;
+    left: 45%;
+  }
+
+  .interrogacao2 {
+    /*top: 205px;
+    left: 550px;*/
+    top: 23.5%;
+    left: 26.5%;
+    margin-left: 0 !important;
+  }
+
+  .interrogacao3 {
+    top: 23.5%;
+    left: 33%;
+    margin-left: 0 !important;
+  }
+
+  .interrogacao4 {
+    /*top: 75px;
+    left: 1075px;*/
+    top: 14%;
+    left: 18%;
+    margin-left: 0 !important;
+  }
+
+  .interrogacao5 {
+    top: 14%;
+    left: -42%;
+    margin-left: 0 !important;
+  }
+
+  .interrogacao6 {
+    /*top: 15px;
+    left: 550px;*/
+    top: 2%;
+    left: 6%;
+    /*display: none;*/
+    visibility: hidden;
+    margin-left: 0 !important;
+  }
+
+  .interrogacao7 {
+    /*top: 15px;
+    left: 835px;*/
+    top: 2%;
+    left: 12.5%;
+    /*display: none;*/
+    visibility: hidden;
+    margin-left: 0 !important;
+  }
+
+  .slot-machine__container {
+    padding-top: 12%;
+  }
+
+  .opcao {
+    /*top: 20px;
+    left: 20px;*/
+    /*width: 120px;
+    height: 110px;*/
+    top: 12%;
+    left: 12%;
+    width: 76%;
+    height: 74%;
+    position: relative;
+  }
+
+  #confronto,
+  #console,
+  #player1,
+  #player2,
+  #player3,
+  #player4,
+  #jogo {
+    z-index: 0 !important;
+  }
+
+  .question {
+    background-image: url("opcao-indefinida.png");
+    background-size: cover;
+  }
+
+  .x2 {
+    background-image: url("x2.png");
+    background-size: cover;
+  }
+
+  .x3 {
+    background-image: url("x3.png");
+    background-size: cover;
+  }
+
+  .x4 {
+    background-image: url("x4.png");
+    background-size: cover;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  body * {
+    overflow: hidden;
+  }
+
+  .opcaoJogo div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*height: 110px;*/
+    height: 100%;
+  }
+
+  .opcaoJogo p {
+    color: white;
+    font-family: "MarioKart";
+    font-weight: bold;
+    font-size: 1em;
+    text-align: center;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  }
+
+  .telaSorteio {
+    display: none;
+  }
+
+  .telaPartidas .partida {
+    padding-top: 5px;
+  }
+
+  .telaPartidas .controles {
+    padding-top: 0;
+    padding-bottom: 5px;
+  }
+
+
+
+  .telaPartidas .partida p {
+    font-family: "MarioKart", Verdana, Tahoma;
+    text-shadow: -2px -2px 0 #FFF, 2px -2px 0 #FFF, -2px 2px 0 #FFF, 2px 2px 0 #FFF;
+    text-align: left;
+    padding-left: 15px;
+    margin-bottom: 5px;
+  }
+
+  .telaPartidas .player {
+    width: 50%;
+    cursor: pointer;
+  }
+
+  .telaPartidas .player:checked {
+    border: 2px solid red;
+  }
+
+  .telaPartidas .player:hover {
+    border: 2px solid olive;
+
+  }
+
+  .telaPartidas .confronto,
+  .telaPartidas .versus {
+    display: flex;
+  }
+
+  .telaPartidas .player1,
+  .telaPartidas .player2,
+  .telaPartidas .player3,
+  .telaPartidas .player4 {
+    display: block;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .telaPartidas .confronto-x2 {
+    height: 100px;
+  }
+
+  .telaPartidas .confronto-x2 .players .row {
+    height: 100px;
+  }
+
+  .telaPartidas .confronto {
+    padding-top: 5px;
+  }
+
+  .telaPartidas input[type="checkbox"] {
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .telaPartidas .player1,
+  .telaPartidas .player3 {
+    text-align: right;
+    justify-content: right;
+    align-items: center;
+  }
+
+  .telaPartidas .versus {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .telaPartidas .versus div {
+    text-align: center;
+    justify-content: center;
+    width: 65px;
+    align-items: center;
+  }
+
+  .telaPartidas .interrogacao {
+    width: 70px;
+    height: 64px;
+    background-size: contain;
+    z-index: 1;
+  }
+
+  .telaPartidas .opcao {
+    top: 8px;
+    left: 8px;
+    width: 54px;
+    height: 48px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+
+
+  .telaPartidas .player2,
+  .telaPartidas .player4 {
+    text-align: left;
+    justify-content: left;
+    align-items: center;
+  }
+
+  .telaPartidas .player div {
+    top: 8px;
+    left: 8px;
+    width: 55px;
+    height: 50px;
+    z-index: 0;
+    position: relative;
+  }
+
+  .telaPartidas .jogo {
+    font-size: 0.5rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding-left: 10px;
+
+
+  }
+
+  .telaPartidas .opcao p {
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0;
+
+  }
+
+  .telaPartidas .form-check {
+    width: 47px;
+    height: 30px;
+    justify-content: center;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+  }
+
+  .telaPartidas button {
+    scale: 80% 80%;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .telaPartidas .botoes {
+    display: block;
+  }
+
+  .telaPartidas .botoes div {
+
+    display: flex;
+    justify-content: left;
+    align-items: center;
+  }
+
+
+  .telaPartidas .controles p {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 0;
+  }
+
+  .telaPartidas .console {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    padding-right: 10px;
+  }
+
+  .telaPartidas .console>div {
+    scale: 125% 125%;
+  }
+
+  .telaPartidas .jogo>div {
+    scale: 125% 125%;
+  }
+
+  .telaPartidas .left-players {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+  }
+
+  .telaPartidas .right-players,
+  .telaPartidas .desc {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+  }
+
+  .telaPartidas .partida:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .telaPartidas .partida:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .telaPartidas .tipoJogo {
+    display: flex;
+    justify-content: right;
+  }
+
+  .telaPartidas .tipoJogo {
+    padding-right: 15px;
+    ;
+  }
+
+  .telaPartidas .header {
+    display: inline-flex;
+  }
+
+  .telaPartidas .separacao {
+    padding-top: 7px;
+  }
+
+  .proxima-rodada {
+    display: block;
+    text-align: center;
+    font-family: "MarioKart", Verdana, Tahoma;
+    position: absolute;
+    bottom: 5%;
+    right: 0%;
+    cursor: pointer;
+    -webkit-animation: upNdown 2s infinite linear;
+    animation: upNdown 2s infinite linear;
+  }
+
+  .proxima-rodada:hover * {
+    color: red;
+    -webkit-filter: grayscale(0%);
+    /* Safari 6.0 - 9.0 */
+    filter: grayscale(0%);
+
+  }
+
+  .proxima-rodada p {
+    padding-top: 5px;
+  }
+
+  .proxima-rodada img {
+    width: 50%;
+    -webkit-filter: grayscale(100%);
+    /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+  }
+
+  @-webkit-keyframes upNdown {
+    0% {}
+
+    50% {
+      transform: translate(-5px);
+    }
+
+    100% {}
+  }
+
+  @keyframes upNdown {
+    0% {}
+
+    50% {
+      transform: translate(-5px);
+    }
+
+    100% {}
+  }
+
+  .telaPartidas .jogo p {
+    color: white;
+    text-shadow: 0 0 0 BLACK;
+  }
+</style>
+
+<div class="w-100 h-100 tela1 tabelaCompetidores telaTabela" >
+  <div class="proxima-rodada">
+    <img src="marioparty3.png">
+    <p class="strokeme">Proxima Rodada</p>
+  </div>
+  <div class="row banner">
+    <div class="col">
+    </div>
+    <div class="col-6 titulo">
+      <div>
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+        <p class="fs-1 strokeme">CAMPEONATO</p>
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+      </div>
+    </div>
+    <div class="col">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+    </div>
+    <div class="col-6 linha">
+    </div>
+    <div class="col">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+    </div>
+    <div class="col-6 subtitulo fs-4">
+      <p class="cilindrada">150cc</p>
+      <p class="cup">TOLEDOCON 4 CUP</p>
+      <p class="round">R1</p>
+      <p class="round">R2</p>
+      <p class="round">R3</p>
+      <p class="round">R4</p>
+      <p class="total fs-5">TOTAL</p>
+    </div>
+    <div class="col">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+    </div>
+    <div class="col-6 linha">
+    </div>
+    <div class="col">
+    </div>
+  </div>
+  
+</div>
+<div class="w-100 h-100 tela2 telaPreSorteio" style="display: none;">
+  <video id="video" class="video w-100 h-100">
+    <source src="chancetime.mp4" type="video/mp4">
+  </video>
+
+</div>
+
+<div class="w-100 h-100 tela3 telaSorteio" style="display: none;">
+  <canvas id="canvas" width="1920" height="1080"></canvas>
+
+  <div class="interrogacao interrogacao1 jogo"></div>
+  <div id="jogo" class="interrogacao interrogacao1 jogo" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+  <div class="interrogacao interrogacao2 player1"></div>
+  <div id="player1" class="interrogacao interrogacao2 player1" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+
+  <div class="interrogacao interrogacao3 player2"></div>
+  <div id="player2" class="interrogacao interrogacao3 player2" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+  <div class="interrogacao interrogacao6 player3"></div>
+  <div id="player3" class="interrogacao interrogacao6 player3" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+  <div class="interrogacao interrogacao7 player4"></div>
+  <div id="player4" class="interrogacao interrogacao7 player4" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+  <div class="interrogacao interrogacao4 console"></div>
+  <div id="console" class="interrogacao interrogacao4 console" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+
+
+  <div class="interrogacao interrogacao5 confronto">
+  </div>
+  <div id="confronto" class="interrogacao interrogacao5 confronto" style="margin-left: -10.2% !important;">
+    <div class="opcao question"></div>
+  </div>
+
+  <img src="exclamacao.png" class="exclamacao">
+
+
+
+</div>
+
+
+
+<div class="w-100 h-100 tela4 telaPartidas" style="display: none;">
+  <div class="row banner">
+    <div class="col">
+    </div>
+    <div class="col-6 titulo">
+      <div>
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+        <p class="fs-1 strokeme identificador-rodada">Rodada #</p>
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+        <img src="mushroom.png">
+      </div>
+    </div>
+    <div class="col">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+    </div>
+    <div class="col-7 linha2">
+    </div>
+    <div class="col">
+    </div>
+  </div>
+  <div class="partidas"></div>
+</div>
+<div class="w-100 h-100 tela5 telaVitoria" style="display: none;">
+  <img src="vitoria.gif" class="animacao-vitoria">
+  <img src="podio.png" class="podio" >
+  <div class="primeiro-lugar"></div>
+  <div class="segundo-lugar"></div>
+  <div class="terceiro1-lugar"></div>
+  <div class="terceiro2-lugar"></div>
+  <div class="box-resultados"></div>
+  <div class="congratulations"></div>
+  <button class="btn btn-danger reset">Reset?</button>
+
+    
+</div>
+  <script>
+    const jogos = [
+    {
+        "console": "Virtual Boy",
+        "estacao": "x2",
+        "jogo": "Street Fighter 2",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Street Fighter 2",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Mario Kart",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Dead or Alive 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x2",
+        "jogo": "DefJam",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Super Smash Bros",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Rhythm Heaven Fever",
+        "desc": "Ringside 2p"
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Tetris",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Battle Arena Toshiden Remix - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Bloody Roar 4",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Super Mario Bros. 3 (Modo de batalha)",
+        "desc": "(Modo de batalha)"
+    },
+    {
+        "console": "GBA",
+        "estacao": "x2",
+        "jogo": "Mario Kart: Super Circuit",
+        "desc": ""
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Tetris DX",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Bomberman",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Killer Instinst",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Mario Kart",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Street Fighter 3",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x2",
+        "jogo": "Burnout 3",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Mario Strikers",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Mario Kart",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Donkey Kong Land 2 (Modo de Duelo)",
+        "desc": "modo duelo"
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "XMen VS Street Fighter - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Star Wars Battlefront",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Contra",
+        "desc": "sem continue"
+    },    
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Super Mario Bros. Deluxe",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Mortal Kombat 3",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Rock n Roll Racing",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "WCW vs NWO",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Street Fighter Alpha 3",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x2",
+        "jogo": "Halo 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Wii Sports Resort",
+        "desc": "Minigame Espada"
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Contra: The Alien Wars",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "X-Men Children of the Atom - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Star Wars Battlefront 2",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Double Dragon II: The Revenge",
+        "desc": "sem continue"
+    },
+    {
+        "console": "GBA",
+        "estacao": "x2",
+        "jogo": "Super Mario Advance?",
+        "desc": ""
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Wario Land 3",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "GoldenAxe",
+        "desc": "duelo"
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Street Fighter Alpha 2",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Super Smash Bros",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Project Justice: Rival Schools 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x2",
+        "jogo": "Marvel vs Capcom 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "FZero GX",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Wii Sports Resort",
+        "desc": "Mini Game do Arco e Flecha"
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Kirby's Dream Land 2 (Modo de Duelo)",
+        "desc": "modo duelo"
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Marvel Super Heroes - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Tekken 5",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Ice Climber",
+        "desc": ""
+    },
+    {
+        "console": "GBA",
+        "estacao": "x2",
+        "jogo": "WarioWare, Inc.: Mega Microgames!",
+        "desc": ""
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Yuyu Hakusho Makyo Toitsusen",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Contra",
+        "desc": "sobreviver sem continue"
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Fzero 64",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Hydro Thunder",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x2",
+        "jogo": "Tony Hawk's Pro Skater 3",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Sonic Adventure 2 Battle",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Wii Sports",
+        "desc": "Tenis"
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Tennis",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Bloody Roar 2 - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "TimeSplitters: Future Perfect",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Teenage Mutant Ninja Turtles II: The Arcade Game",
+        "desc": "sem continue"
+    },
+    {
+        "console": "GBA",
+        "estacao": "x2",
+        "jogo": "Bomberman Tournament",
+        "desc": ""
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Bomberman Quest",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Street of Rage 2",
+        "desc": "versus"
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Tetris Battle Gaiden",
+        "desc": "versus"
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Star Fox Multiplayer",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Ikaruga",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x2",
+        "jogo": "Street Fighter Anniversary Collection",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Tony Hawk's Pro Skater 4",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Wii Sports",
+        "desc": "Boxe"
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Bomberman GB",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Tony Hawk Pro Skater - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Ratchet: Deadlocked",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Dr. Mario",
+        "desc": ""
+    },
+    {
+        "console": "GBA",
+        "estacao": "x2",
+        "jogo": "Sonic Advance 3",
+        "desc": ""
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Wario Land II",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Gunstar Heroes ",
+        "desc": "sobreviver sem continue"
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Ultimate Mortal Kombat 3",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Wave Racer",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Wacky Races: Starring Dastardly and Muttley",
+        "desc": "quem morrer primeiro perde"
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Donkey Konga 2",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x2",
+        "jogo": "Mario Sports Mi",
+        "desc": "Queimada"
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Kirby's Star Stacker",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Tony Hawk Pro Skater 2 - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "SoulCalibur II",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Pro Wrestling",
+        "desc": ""
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Crystalis",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Samurai Shodown",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "International Superstar Soccer Deluxe",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Bomberman 64",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Virtua Tennis",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Bomberman",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "NBA Jam Tournament Edition",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Tekken 3 - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Mortal Kombat: Deception",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x2",
+        "jogo": "Excitebike ",
+        "desc": "Modo Vs."
+    },
+    {
+        "console": "GBC",
+        "estacao": "x2",
+        "jogo": "Top Gear Pocket 2",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Micro Machines 2 Turbo Tournament",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "NBA Jam Tournament",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "San Francisco Rush",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Power Stone",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "SSX",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "F1 Race",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Crash Team Racing - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Street Fighter Anniversary Collection",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Contra",
+        "desc": "sobreviver sem continue"
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Metal Warriors",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Star Wars Episode 1 Racer",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Power Stone 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "WaveRace",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x2",
+        "jogo": "Super R.C. Pro-Am",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Vigilante 8 2nd Offence - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Virtua Fighter 4: Evolution",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Rock â€˜n Roll Racing",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Battletoads",
+        "desc": "gameover perde"
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Beetle Adventure Racing",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Garou Mark of the Wolves",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x2",
+        "jogo": "Sonic 2 Battle",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Revolt - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Tony Hawk's Pro Skater 3",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Road Rash 2",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Wildguns",
+        "desc": "gameover perde"
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Ridge Racer 64",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x2",
+        "jogo": "Virtua Fighter 3TB",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Super Puzzle Fighter 2 Turbo - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Gran Turismo 4",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Formula One",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Sunset Riders",
+        "desc": "gameover perde"
+    },
+    {
+        "console": "N64",
+        "estacao": "x2",
+        "jogo": "Turok Rage Wars",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Bushido Blade 2 - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "Burnout 3: Takedown",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Columns III Revenge of the Columns",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Gundam Endless Duel",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Street Fighter Alpha 3 - ok",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x2",
+        "jogo": "TimeSplitters: Future Perfect",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Skitchin",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Power Rangers - The Fightning",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Twisted Metal 2 - ok",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "NBA Jam Tournament",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x2",
+        "jogo": "Street Fighter 2 World Warrior",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Mortal Kombat Trilogy - ok",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "International Superstar Soccer Deluxe",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Gran Turismo 2 - ok",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Super Volleyball",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Soul Blade - ok",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Top Gear 2",
+        "desc": ""
+    },
+    {
+        "console": "PS1",
+        "estacao": "x2",
+        "jogo": "Bomberman World - ok",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Greatest Heavyweights",
+        "desc": ""
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Sonic 2",
+        "desc": "versus"
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Sonic 3",
+        "desc": "versus"
+    },
+    {
+        "console": "Mega Drive",
+        "estacao": "x2",
+        "jogo": "Road Rash 3",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Super Bomberman 2",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Goldeneye 007",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Power Stone 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x3",
+        "jogo": "DefJam",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Super Smash Bros",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x3",
+        "jogo": "Super Smash Bros. Brawl",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "Tetris",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "Crash Nitro Kart",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x3",
+        "jogo": "Super Spike V'Ball / Nintendo World Cup",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "International Superstar Soccer Deluxe",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Sega Rally 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x3",
+        "jogo": "Burnout 3",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Mario Strikers",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x3",
+        "jogo": "Mario Kart Wii",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "Bomberman GB",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "TimeSplitters 2",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x3",
+        "jogo": "R.C. Pro-Am II",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Pieces",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Mario Kart",
+        "desc": "corrida"
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Virtua Tennis 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x3",
+        "jogo": "Halo 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "Kirby's Star Stacker",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "TimeSplitters: Future Perfect",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x3",
+        "jogo": "Ivan \"Ironman\" Stewart's Super Off Road",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Top Gear 3000 ",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "ChuChu Rocket!",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x3",
+        "jogo": "Marvel vs Capcom 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "FZero GX",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "NBA Jam Tournament Edition",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "Micro Machines V4",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x3",
+        "jogo": "Bomberman II",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Capcom's Soccer Shootout",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Super Smash Bros",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Outtrigger",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x3",
+        "jogo": "Tony Hawk's Pro Skater 3",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Sonic Adventure 2 Battle",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "F1 Race",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "Bomberman Hardball",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "College Slam",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Perfect Dark",
+        "desc": "combat simulator - explosives - 8 simulants"
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Sonic Shuffle",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x3",
+        "jogo": "Street Fighter Anniversary Collection",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Tony Hawk's Pro Skater 4",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "Kirby's Dream Land 2",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "Gauntlet: Dark Legacy",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Saturday Night Slam Masters",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Snowboard Kids 2",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Re-Volt",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Donkey Konga 2",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "Super R.C. Pro-Am",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "Worms 3D",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "FIFA: Road to World Cup 98",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x3",
+        "jogo": "Mario Kart",
+        "desc": "battle mode"
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Toy Commander",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Bomberman",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x3",
+        "jogo": "Top Gear Pocket 2",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "Tony Hawk's Pro Skater 4",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Hanna Barbera's Turbo Toons",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x3",
+        "jogo": "Zombie Revenge",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "SSX",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x3",
+        "jogo": "International Superstar Soccer 3",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Looney Tunes B-Ball",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Mario Golf",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Micro Machines 2: Turbo Tournament",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x3",
+        "jogo": "Sonic 2 Battle",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "NBA Jam: Tournament Edition",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Street Hockey '95",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Puyo Puyo 2",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "Tiny Toon Adventures Wacky Sports",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x3",
+        "jogo": "WWF Raw",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Super Bomberman 2",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Goldeneye 007",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Power Stone 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x4",
+        "jogo": "DefJam",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Super Smash Bros",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x4",
+        "jogo": "Super Smash Bros. Brawl",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "Tetris",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "Crash Nitro Kart",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x4",
+        "jogo": "Super Spike V'Ball / Nintendo World Cup",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "International Superstar Soccer Deluxe",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Sega Rally 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x4",
+        "jogo": "Burnout 3",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Mario Strikers",
+        "desc": ""
+    },
+    {
+        "console": "Wii",
+        "estacao": "x4",
+        "jogo": "Mario Kart Wii",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "Bomberman GB",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "TimeSplitters 2",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x4",
+        "jogo": "R.C. Pro-Am II",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Pieces",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Mario Kart",
+        "desc": "corrida"
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Virtua Tennis 2",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x4",
+        "jogo": "Halo 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Mario Tennis",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "Kirby's Star Stacker",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "TimeSplitters: Future Perfect",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x4",
+        "jogo": "Ivan \"Ironman\" Stewart's Super Off Road",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Top Gear 3000 ",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "ChuChu Rocket!",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x4",
+        "jogo": "Marvel vs Capcom 2",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "FZero GX",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "NBA Jam Tournament Edition",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "Micro Machines V4",
+        "desc": ""
+    },
+    {
+        "console": "NES",
+        "estacao": "x4",
+        "jogo": "Bomberman II",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Capcom's Soccer Shootout",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Super Smash Bros",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Outtrigger",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x4",
+        "jogo": "Tony Hawk's Pro Skater 3",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Sonic Adventure 2 Battle",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "F1 Race",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "Bomberman Hardball",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "College Slam",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Perfect Dark",
+        "desc": "combat simulator - explosives - 8 simulants"
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Sonic Shuffle",
+        "desc": ""
+    },
+    {
+        "console": "Xbox",
+        "estacao": "x4",
+        "jogo": "Street Fighter Anniversary Collection",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Tony Hawk's Pro Skater 4",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "Kirby's Dream Land 2",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "Gauntlet: Dark Legacy",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Saturday Night Slam Masters",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Snowboard Kids 2",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Re-Volt",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Donkey Konga 2",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "Super R.C. Pro-Am",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "Worms 3D",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "FIFA: Road to World Cup 98",
+        "desc": ""
+    },
+    {
+        "console": "N64",
+        "estacao": "x4",
+        "jogo": "Mario Kart",
+        "desc": "battle mode"
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Toy Commander",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Bomberman",
+        "desc": ""
+    },
+    {
+        "console": "Game Boy",
+        "estacao": "x4",
+        "jogo": "Top Gear Pocket 2",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "Tony Hawk's Pro Skater 4",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Hanna Barbera's Turbo Toons",
+        "desc": ""
+    },
+    {
+        "console": "Dreamcast",
+        "estacao": "x4",
+        "jogo": "Zombie Revenge",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "SSX",
+        "desc": ""
+    },
+    {
+        "console": "PS2",
+        "estacao": "x4",
+        "jogo": "International Superstar Soccer 3",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Looney Tunes B-Ball",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Mario Golf",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Micro Machines 2: Turbo Tournament",
+        "desc": ""
+    },
+    {
+        "console": "GameCube",
+        "estacao": "x4",
+        "jogo": "Sonic 2 Battle",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "NBA Jam: Tournament Edition",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Street Hockey '95",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Puyo Puyo 2",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "Tiny Toon Adventures Wacky Sports",
+        "desc": ""
+    },
+    {
+        "console": "SNES",
+        "estacao": "x4",
+        "jogo": "WWF Raw",
+        "desc": ""
+    }
+];
+  </script>
