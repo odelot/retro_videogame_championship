@@ -100,12 +100,13 @@ Com certeza o código tem vários bugs. Caso o webapp entre em um estado inconsi
 ## Créditos
 
 Músicas e imagens pertencem aos seus respectivos donos e foram obtidas/editadas em pesquisas no Google ou dos jogos homenageados.
-Lib Slot Machine: https://github.com/josex2r/jQuery-SlotMachine
-CDN libs and framework: keydrown, jquery, bootstrap
-SNES Super Mario Kart font: https://fontstruct.com/fontstructions/show/692065/super_mario_kart
-SNES Super Mario Kart sprites and backgrounds: https://www.spriters-resource.com/snes/smariokart/
-Mario Party Chance Time Video: https://www.youtube.com/watch?v=TfyrCcCMVgo
-Soundtracks: https://downloads.khinsider.com/
-Celebs pictures: https://brightside.me/articles/what-15-celebrities-would-look-like-if-they-had-parts-in-a-new-avatar-movie-810976/
+
+- Lib Slot Machine: https://github.com/josex2r/jQuery-SlotMachine
+- CDN libs and framework: keydrown, jquery, bootstrap
+- SNES Super Mario Kart font: https://fontstruct.com/fontstructions/show/692065/super_mario_kart
+- SNES Super Mario Kart sprites and backgrounds: https://www.spriters-resource.com/snes/smariokart/
+- Mario Party Chance Time Video: https://www.youtube.com/watch?v=TfyrCcCMVgo
+- Soundtracks: https://downloads.khinsider.com/
+- Celebs pictures: https://brightside.me/articles/what-15-celebrities-would-look-like-if-they-had-parts-in-a-new-avatar-movie-810976/
 
 **Desenvolvimento:** odelot
