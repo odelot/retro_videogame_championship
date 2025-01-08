@@ -34,8 +34,8 @@ Replace names and profile images in the `participantes` array:
 ```javascript
 let evento = {    
     participantes: [
-      { nome: "Blake Lively", rodada1: 0, total: 0, profileImg: "blake.png" },
-      { nome: "Tom Hanks", rodada1: 0, total: 0, profileImg: "tom.png" },
+      { nome: "Blake Lively", profileImg: "blake.png", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0 },
+      { nome: "Tom Hanks", profileImg: "tom.png", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0 },
       // Add more players as needed
     ],
     rodadaAtual: 1,
