@@ -8,96 +8,23 @@
 <script src="slotmachine.js"></script>
 <script>
 
-  jQuery.fn.shake = function (interval, distance, times) {
-    interval = typeof interval == "undefined" ? 75 : interval;
-    distance = typeof distance == "undefined" ? 5 : distance;
-    times = typeof times == "undefined" ? 3 : times;
-    let jTarget = $(this);
-    //jTarget.css('position','absolute');
-    oldLeft = jTarget.css('left');
-    oldTop = jTarget.css('top');
-    originLeft = parseInt(oldLeft);
-    originTop = parseInt(oldTop);
-    for (var iter = 0; iter < (times + 1); iter++) {
-      //jTarget.animate({ left: originLeft + ((iter%2==0 ? distance : distance*-1))}, interval);
-      jTarget.animate({ top: originTop + ((iter % 2 == 0 ? distance : distance * -1)) }, interval);
-    }
-    return jTarget.animate({ left: oldLeft, top: oldTop }, interval);
-  }
 
-  function hsvToRgb(h, s, v) {
-    let r, g, b, i, f, p, q, t;
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-      case 0: r = v, g = t, b = p; break;
-      case 1: r = q, g = v, b = p; break;
-      case 2: r = p, g = v, b = t; break;
-      case 3: r = p, g = q, b = v; break;
-      case 4: r = t, g = p, b = v; break;
-      case 5: r = v, g = p, b = q; break;
-    }
-    const rgbToHex = (x) => {
-      const hex = Math.round(x * 255).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
-    };
-    return "#" + rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
-  }
+  /**
+   * GLOBAL VARIABLES 
+   */
 
+  // enables or disables the audio - useful for debugging
+  const audioOn = true;
 
+  // controls the state of the application
   const estadoAplicativo = {
     estadoSorteio: 0,
     partidaEmConfiguracao: 0,
     ligaSorteio: false,
     mostrouFinalistas: false,
-    
-
   }
 
-
-  let evento = {
-    rodadaAtual: 1,
-    participantes: [
-      //{ nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "blake.png" },
-      { nome: "Tom Hanks", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "tom.png" },
-      { nome: "Brad Pitt", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "brad.png" },
-      { nome: "Keanu Reeves", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "keanu.png" },
-      { nome: "Jennifer Lopez", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "jennifer.png" },
-      //{ nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "julia.png" },
-      { nome: "Robert Downey Jr.", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "robert.png" },
-      //{ nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "aniston.png" },
-      { nome: "Henry Cavill", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "henry.png" },
-      { nome: "Scarlett Johansson", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "scarlett.png" },
-      { nome: "Leonardo DiCaprio", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "leo.png" },
-      { nome: "Tom Cruise", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "cruise.png" },
-      { nome: "Sandra Bullock", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "sandra.png" },
-      //{ nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "chris.png" },
-      { nome: "Angelina Jolie", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "angelina.png" },
-      //{ nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "george.png" },
-    ],
-    rodadas: new Array(4),
-  }
-
-  const listaDeVideoGames = [
-    { nome: "Dreamcast", imagem: "dreamcast.png" },
-    { nome: "Game Boy", imagem: "gameboy.png" },
-    { nome: "GameCube", imagem: "gamecube.png" },
-    { nome: "GBA", imagem: "gba.png" },
-    { nome: "GBC", imagem: "gbc.png" },
-    { nome: "Mega Drive", imagem: "megadrive.png" },
-    { nome: "N64", imagem: "n64.png" },
-    { nome: "PS1", imagem: "ps1.png" },
-    { nome: "PS2", imagem: "ps2.png" },
-    { nome: "NES", imagem: "nes.png" },
-    { nome: "SNES", imagem: "snes.png" },
-    { nome: "Virtual Boy", imagem: "virtualboy.png" },
-    { nome: "Wii", imagem: "wii.png" },
-    { nome: "Xbox", imagem: "xbox.png" }
-  ];
-
+  // controls the state of all slot machines in the drawing screen
   const slotMachine = {
     'speed': 150,
     'confronto': {
@@ -130,11 +57,76 @@
     }
   }
 
+
+  /**
+   *  FUNCTIONS
+   */
+
+  // add shake effect to jQuery
+  jQuery.fn.shake = function (interval, distance, times) {
+    interval = typeof interval == "undefined" ? 75 : interval;
+    distance = typeof distance == "undefined" ? 5 : distance;
+    times = typeof times == "undefined" ? 3 : times;
+    let jTarget = $(this);
+    //jTarget.css('position','absolute');
+    oldLeft = jTarget.css('left');
+    oldTop = jTarget.css('top');
+    originLeft = parseInt(oldLeft);
+    originTop = parseInt(oldTop);
+    for (var iter = 0; iter < (times + 1); iter++) {
+      //jTarget.animate({ left: originLeft + ((iter%2==0 ? distance : distance*-1))}, interval);
+      jTarget.animate({ top: originTop + ((iter % 2 == 0 ? distance : distance * -1)) }, interval);
+    }
+    return jTarget.animate({ left: oldLeft, top: oldTop }, interval);
+  }
+
+
+
+  // convert HSV to RGB - useful to generate a scale of colors
+  function hsvToRgb(h, s, v) {
+    let r, g, b, i, f, p, q, t;
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+      case 0: r = v, g = t, b = p; break;
+      case 1: r = q, g = v, b = p; break;
+      case 2: r = p, g = v, b = t; break;
+      case 3: r = p, g = q, b = v; break;
+      case 4: r = t, g = p, b = v; break;
+      case 5: r = v, g = p, b = q; break;
+    }
+    const rgbToHex = (x) => {
+      const hex = Math.round(x * 255).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    };
+    return "#" + rgbToHex(r) + rgbToHex(g) + rgbToHex(b);
+  }
+
+  // get the number of participants in the event
   function getNumParticipantes() {
     return evento.participantes.length;
   }
 
+  // get possible type of matches (x2, x3, x4) for each console based on the game list
+  function getEstacoesPorConsole(jogos) {
+    const estacoesPorConsole = {};
 
+    jogos.forEach(jogo => {
+      if (!estacoesPorConsole[jogo.console]) {
+        estacoesPorConsole[jogo.console] = [];
+      }
+      if (!estacoesPorConsole[jogo.console].includes(jogo.estacao)) {
+        estacoesPorConsole[jogo.console].push(jogo.estacao);
+      }
+    });
+
+    return estacoesPorConsole;
+  }
+
+  // configure the type of matches per console
   function configuraConsolesComBaseNosJogos() {
     const estacoesPorConsole = getEstacoesPorConsole(jogos);
     listaDeVideoGames.forEach((console, i) => {
@@ -144,7 +136,7 @@
     });
   }
 
-
+  // create the html insert that represents a participant
   function criaHTMLJogador(evento, jogador) {
     const jogadorHTML = `
         <div class='interrogacao player' meta-data='${jogador}'>
@@ -159,7 +151,7 @@
   }
 
 
-
+  // create the html insert that represents the players in a draw
   function criarHTMLJogadores(partida) {
     const eventos = getEvento();
     let leftPlayers = `
@@ -203,6 +195,7 @@
 
   }
 
+  // create the html insert that represents a confrontation in the list after the draw
   function criaPartida(partida, i) {
     // console.log (partida);
     const jogosFiltrados = obtemJogos(listaDeVideoGames[partida.console].nome, "x" + (partida.confronto + 2));
@@ -269,17 +262,18 @@
 
   }
 
+  // applay the events on the confrontation buttons
   function iniciarPartidas() {
-    
+
     const rodadaAtual = getEvento().rodadaAtual;
     if (rodadaAtual <= 4) {
       //$(".identificador-rodada").text("Rodada #" + rodadaAtual);
       $(".identificador-rodada").text("Round #" + rodadaAtual);
     } else
-    if (rodadaAtual == 5) {
-      //$(".identificador-rodada").text("Semi-Finais");
-      $(".identificador-rodada").text("Semi-Finals");
-    }
+      if (rodadaAtual == 5) {
+        //$(".identificador-rodada").text("Semi-Finais");
+        $(".identificador-rodada").text("Semi-Finals");
+      }
     if (rodadaAtual == 6) {
       //$(".identificador-rodada").text("Grande Final");
       $(".identificador-rodada").text("Grand Finale");
@@ -288,7 +282,7 @@
     $(".partidas").empty();
     evento.rodadas[rodadaAtual - 1].forEach((partida, i) => {
       criaPartida(partida, i);
-    });    
+    });
     $('button').attr("disabled", false);
     if (rodadaAtual >= 5) {
       $(".btn-warning").attr("disabled", true);
@@ -296,52 +290,53 @@
       $(".btn-warning").click(empatou);
     }
     $(".btn-success").click(venceu);
-    
+
 
   }
 
-function iniciarVitoria() {
-  const imgPodio = [];
-  const imgPrimeiroLugar = getParticipantes().find(participante => {
-    if (participante.hasOwnProperty('rodada6') && participante.rodada6 == 24) {
-      return true;
-    }
-  }).profileImg;
-  imgPodio.push(imgPrimeiroLugar);
-  const imgSegundoLugar = getParticipantes().find(participante => {
-    if (participante.hasOwnProperty('rodada5') && participante.rodada5 == 12) {
-      if (imgPodio.indexOf(participante.profileImg) < 0) {
+  // configure the victory screen with the final results and start the animation
+  function iniciarVitoria() {
+    const imgPodio = [];
+    const imgPrimeiroLugar = getParticipantes().find(participante => {
+      if (participante.hasOwnProperty('rodada6') && participante.rodada6 == 24) {
         return true;
       }
+    }).profileImg;
+    imgPodio.push(imgPrimeiroLugar);
+    const imgSegundoLugar = getParticipantes().find(participante => {
+      if (participante.hasOwnProperty('rodada5') && participante.rodada5 == 12) {
+        if (imgPodio.indexOf(participante.profileImg) < 0) {
+          return true;
+        }
+      }
+    }).profileImg;
+    imgPodio.push(imgSegundoLugar);
+    const semifinalistas = getEvento().semifinalistas;
+    for (let i = 0; i < 4; i++) {
+      if (imgPodio.indexOf(semifinalistas[i].profileImg) < 0) {
+        imgPodio.push(semifinalistas[i].profileImg);
+      }
     }
-  }).profileImg;
-  imgPodio.push(imgSegundoLugar);
-  const semifinalistas = getEvento().semifinalistas;
-  for (let i = 0; i < 4; i++) {
-    if (imgPodio.indexOf(semifinalistas[i].profileImg) < 0) {
-      imgPodio.push(semifinalistas[i].profileImg);
-    }
-  }
-  $('.primeiro-lugar').css("background-image", "url(" + imgPodio[0] + ")");
-  $('.segundo-lugar').css("background-image", "url(" + imgPodio[1] + ")");
-  $('.terceiro1-lugar').css("background-image", "url(" + imgPodio[2] + ")");
-  $('.terceiro2-lugar').css("background-image", "url(" + imgPodio[3] + ")");
+    $('.primeiro-lugar').css("background-image", "url(" + imgPodio[0] + ")");
+    $('.segundo-lugar').css("background-image", "url(" + imgPodio[1] + ")");
+    $('.terceiro1-lugar').css("background-image", "url(" + imgPodio[2] + ")");
+    $('.terceiro2-lugar').css("background-image", "url(" + imgPodio[3] + ")");
 
-  let participantes = getParticipantes();
-  participantes.sort((a, b) => {
-    if (a.total === b.total) {
-      return a.nome.localeCompare(b.nome);
-    }
-    return b.total - a.total;
-  });
+    let participantes = getParticipantes();
+    participantes.sort((a, b) => {
+      if (a.total === b.total) {
+        return a.nome.localeCompare(b.nome);
+      }
+      return b.total - a.total;
+    });
 
-  $(".box-resultados").empty();
-  const hue = (214 / (getNumParticipantes()+1)) / 360;
-  const saturation = 100 / 100;
-  const value = 97 / 100;
-  const color = hsvToRgb (hue,saturation,value);
+    $(".box-resultados").empty();
+    const hue = (214 / (getNumParticipantes() + 1)) / 360;
+    const saturation = 100 / 100;
+    const value = 97 / 100;
+    const color = hsvToRgb(hue, saturation, value);
 
-  const div = `
+    const div = `
       <div class="participante" meta-data="0" style="color: ${color};  ">
         <div class="numero"></div>
         <div class="nome">Placar Final</div>
@@ -349,105 +344,109 @@ function iniciarVitoria() {
       </div>
     `;
 
-  $(".box-resultados").append(div);
-  participantes.forEach((participante, i) => {
-    const hue = (214 - (i+1) * 214 / (getNumParticipantes()+1)) / 360;
-    const saturation = 100 / 100;
-    const value = 97 / 100;
-    const color = hsvToRgb (hue,saturation,value);
-    const div = `
-      <div class="participante" meta-data="${i+1}" style="color: ${color};  ">
-        <div class="numero">${i+1}.</div>
+    $(".box-resultados").append(div);
+    participantes.forEach((participante, i) => {
+      const hue = (214 - (i + 1) * 214 / (getNumParticipantes() + 1)) / 360;
+      const saturation = 100 / 100;
+      const value = 97 / 100;
+      const color = hsvToRgb(hue, saturation, value);
+      const div = `
+      <div class="participante" meta-data="${i + 1}" style="color: ${color};  ">
+        <div class="numero">${i + 1}.</div>
         <div class="nome">${participante.nome}</div>
         <div class="pontos">${participante.total}</div>
       </div>
     `;
-    $(".box-resultados").append(div);
-  });
+      $(".box-resultados").append(div);
+    });
 
-  for (let i = getNumParticipantes()+1; i< 20; i+=1) {
-    
-    const div = `
+    for (let i = getNumParticipantes() + 1; i < 20; i += 1) {
+
+      const div = `
       <div class="participante figurante" >
         <div class="numero"></div>
         <div class="nome">figurante</div>
         <div class="pontos"></div>
       </div>`;
-    $(".box-resultados").append(div);
+      $(".box-resultados").append(div);
 
-  }
-
-  setTimeout(tocaMusicaFundoVitoria,0);
-  setTimeout(function () {
-    $(".animacao-vitoria").fadeOut( function () {
-      $(".animacao-vitoria").css("display", "flex");
-      $(".animacao-vitoria").css("visibility", "hidden");
-    });
-    $(".podio").fadeIn(function () {
-
-      $(".podio").css ("opacity","1");
-      $(".primeiro-lugar").toggleClass('animate');
-      $(".congratulations").toggleClass('animate');
-      setTimeout (function () {
-        $(".segundo-lugar").toggleClass('animate');
-      }, 1400);
-      setTimeout (function () {
-        $(".terceiro1-lugar, .terceiro2-lugar").toggleClass('animate');
-      }, 2800);
-      setTimeout (function () { 
-        $(".box-resultados").animate({
-          "opacity": 1 }, 500, function () {
-          animaEntradaResultado(0)
-        });
-      }, 2800);
-    });    
-
-  }, 5000);
-}
-
-function reset() {
-  //const tentativa1 = confirm("Tem certeza que quer resetar?");
-  const tentativa1 = confirm("Are you sure you want to reset?");
-  if (tentativa1) {
-    //const tentativa2 = confirm("Tem certeza que quer resetar mesmo?");
-    const tentativa2 = confirm("Are you sure you really want to reset?");
-    if (tentativa2) {
-      clear();
-      location.reload();
     }
+
+    setTimeout(tocaMusicaFundoVitoria, 0);
+    setTimeout(function () {
+      $(".animacao-vitoria").fadeOut(function () {
+        $(".animacao-vitoria").css("display", "flex");
+        $(".animacao-vitoria").css("visibility", "hidden");
+      });
+      $(".podio").fadeIn(function () {
+
+        $(".podio").css("opacity", "1");
+        $(".primeiro-lugar").toggleClass('animate');
+        $(".congratulations").toggleClass('animate');
+        setTimeout(function () {
+          $(".segundo-lugar").toggleClass('animate');
+        }, 1400);
+        setTimeout(function () {
+          $(".terceiro1-lugar, .terceiro2-lugar").toggleClass('animate');
+        }, 2800);
+        setTimeout(function () {
+          $(".box-resultados").animate({
+            "opacity": 1
+          }, 500, function () {
+            animaEntradaResultado(0)
+          });
+        }, 2800);
+      });
+
+    }, 5000);
   }
 
-}
-
-function animaEntradaResultado (i) {
-        const numParticipantes = getNumParticipantes();
-        if (i > numParticipantes) {
-          $(".reset").fadeIn().off().on("click",reset);
-
-          // liga o reset
-          return;
-        }
-        $(".box-resultados .participante[meta-data=" + i + "]").animate({
-          "margin-right": 0 }, 500, function () {
-          animaEntradaResultado(i + 1);
-        });
+  // reset the application to the initial state
+  function reset() {
+    //const tentativa1 = confirm("Tem certeza que quer resetar?");
+    const tentativa1 = confirm("Are you sure you want to reset?");
+    if (tentativa1) {
+      //const tentativa2 = confirm("Tem certeza que quer resetar mesmo?");
+      const tentativa2 = confirm("Are you sure you really want to reset?");
+      if (tentativa2) {
+        clear();
+        location.reload();
       }
+    }
+
+  }
+
+  // animate the entry of the results
+  function animaEntradaResultado(i) {
+    const numParticipantes = getNumParticipantes();
+    if (i > numParticipantes) {
+      $(".reset").fadeIn().off().on("click", reset);
+      // enable reset button
+      return;
+    }
+    $(".box-resultados .participante[meta-data=" + i + "]").animate({
+      "margin-right": 0
+    }, 500, function () {
+      animaEntradaResultado(i + 1);
+    });
+  }
 
 
-  function iniciarPreSorteio () {
+  // play the video of chance time before the draw
+  function iniciarPreSorteio() {
     const video = document.getElementById("video");
-    $(video).css("display","block");
+    $(video).css("display", "block");
     video.onended = function () {
-      $(video).css("display","none");
-      $(".telaPreSorteio").css("display","none");
-      $(".telaSorteio").css("display","flex");  
+      $(video).css("display", "none");
+      $(".telaPreSorteio").css("display", "none");
+      $(".telaSorteio").css("display", "flex");
       video.currentTime = 0;
       iniciarSorteio();
-      
+
     }
     setTimeout(function () {
       video.play();
-      tocaMusicaFundoSorteio ();
+      tocaMusicaFundoSorteio();
       setTimeout(function () {
         tocaChanceTime();
       }, 5000);
@@ -456,26 +455,18 @@ function animaEntradaResultado (i) {
 
   }
 
-  function pararPreSorteio () {
-
-  }
-
+  // initialize the web application
   function iniciarPagina() {
     configuraConsolesComBaseNosJogos();
-    //iniciaPartidas();
     iniciarTabela();
-    //iniciarPreSorteio();
-    //iniciarSorteio();
-    //iniciarVitoria();
-
-
   }
 
+  // cleans the local storage 
   function clear() {
     localStorage.clear();
   }
 
-  // atualiza o total de pontos de cada participante
+  // refresh the total points of each participant
   function atualizarTotais(participantes) {
     participantes.forEach(participante => {
       participante.total = participante.rodada1 + participante.rodada2 + participante.rodada3 + participante.rodada4;
@@ -488,6 +479,7 @@ function animaEntradaResultado (i) {
     });
   }
 
+  // get the event variable from the local storage
   function getEvento() {
     if (!localStorage.getItem("evento")) {
       localStorage.setItem("evento", JSON.stringify(evento));
@@ -495,11 +487,12 @@ function animaEntradaResultado (i) {
     return JSON.parse(localStorage.getItem("evento"));
   }
 
+  // save the event variable in the local storage
   function gravarEvento(evento) {
     localStorage.setItem("evento", JSON.stringify(evento));
   }
 
-  // obtem a lista de participantes do localStorage ja com os totais atualizados 
+  // get the list of participants from the localStorage already with the updated totals
   function getParticipantes() {
     const evento = getEvento();
     let array = evento.participantes;
@@ -508,6 +501,7 @@ function animaEntradaResultado (i) {
     return array;
   }
 
+  // create the semi-finals matches
   function criarSemiFinais() {
     const evento = getEvento();
     const semifinalistas = evento.semifinalistas;
@@ -516,12 +510,12 @@ function animaEntradaResultado (i) {
 
     for (let i = 0; i < semifinalistas.length; i += 2) {
       const jogador1 = semifinalistas[i];
-      const jogador2 = semifinalistas[semifinalistas.length-1-i];
+      const jogador2 = semifinalistas[semifinalistas.length - 1 - i];
       const partida = {
         jogo: -1,
         confronto: 0,
         console: -1,
-        player1: participantes.findIndex(part => part.nome === jogador1.nome), 
+        player1: participantes.findIndex(part => part.nome === jogador1.nome),
         player2: participantes.findIndex(part => part.nome === jogador2.nome),
         player3: -1,
         player4: -1
@@ -536,6 +530,7 @@ function animaEntradaResultado (i) {
     gravarEvento(evento);
   }
 
+  // create the final match
   function criarFinal() {
     const evento = getEvento();
     const finalistas = getFinalistas();
@@ -544,12 +539,12 @@ function animaEntradaResultado (i) {
 
     for (let i = 0; i < finalistas.length; i += 2) {
       const jogador1 = finalistas[i];
-      const jogador2 = finalistas[finalistas.length-1-i];
+      const jogador2 = finalistas[finalistas.length - 1 - i];
       const partida = {
         jogo: -1,
         confronto: 0,
         console: -1,
-        player1: participantes.findIndex(part => part.nome === jogador1.nome), 
+        player1: participantes.findIndex(part => part.nome === jogador1.nome),
         player2: participantes.findIndex(part => part.nome === jogador2.nome),
         player3: -1,
         player4: -1
@@ -564,98 +559,97 @@ function animaEntradaResultado (i) {
     gravarEvento(evento);
   }
 
+  // get the final participants
   function getFinalistas() {
     const evento = getEvento();
     const participantes = getParticipantes();
     const finalistas = [];
-    participantes.forEach (participante => {
-      if (participante.hasOwnProperty('rodada5') && participante['rodada5'] == 12 ) {
+    participantes.forEach(participante => {
+      if (participante.hasOwnProperty('rodada5') && participante['rodada5'] == 12) {
         finalistas.push(participante);
       }
     });
-    
+
     return finalistas;
   }
 
-  function proximaRodada () {
+  // goes to the next round
+  function proximaRodada() {
     const evento = getEvento();
-      if (evento.rodadaAtual == 6) {
-        const finalistas = getFinalistas();
-        //alert ("Grande Final entre " + finalistas[0].nome + " e " + finalistas[1].nome + "!!!");
-        alert ("Grand Finale between " + finalistas[0].nome + " and " + finalistas[1].nome + "!!!");
-        criarFinal ();
-      }
-      if (evento.rodadaAtual == 5) {
-        // selecionar os 4 primeiros
-        let primeiros = [];
-        const participantes = getParticipantes();
-        const participantesOrdenados = JSON.parse(JSON.stringify(participantes)).sort((a, b) => {
-          if (a.total === b.total) {
-            return a.nome.localeCompare(b.nome);
-          }
-          return b.total - a.total;
-        });
-        let pontuacaoAtual = -1;
-        participantesOrdenados.forEach((participante, i) => {
-          const pontuacaoParticipante = participante.total;
-          if (pontuacaoAtual != pontuacaoParticipante) {
-            pontuacaoAtual = pontuacaoParticipante;
-            if (primeiros.length < 4)
-              primeiros.push(participante);
-            else {
-              return;
-            }            
-          } else {
-            if (primeiros.length < 4)
-              primeiros.push(participante);
-          }
-        });
-        if (primeiros.length > 4) {
-          // q caraio, vamos ter que sortear os empatados
-          const pontuacaoEmpatada = primeiros[primeiros.length-1].total;          
-          const empatados = primeiros.filter(participante => participante.total === pontuacaoEmpatada);
-          const naoEmpatados = primeiros.filter(participante => participante.total !== pontuacaoEmpatada);
-          primeiros = naoEmpatados;
-          while (primeiros.length < 4) {
-            const idx = Math.floor(Math.random() * empatados.length);
-            primeiros.push(empatados[idx]);
-            empatados.splice(idx, 1);
-          }          
+    if (evento.rodadaAtual == 6) {
+      const finalistas = getFinalistas();
+      //alert ("Grande Final entre " + finalistas[0].nome + " e " + finalistas[1].nome + "!!!");
+      alert("Grand Finale between " + finalistas[0].nome + " and " + finalistas[1].nome + "!!!");
+      criarFinal();
+    }
+    if (evento.rodadaAtual == 5) {
+      // selecionar os 4 primeiros
+      let primeiros = [];
+      const participantes = getParticipantes();
+      const participantesOrdenados = JSON.parse(JSON.stringify(participantes)).sort((a, b) => {
+        if (a.total === b.total) {
+          return a.nome.localeCompare(b.nome);
         }
-        evento.semifinalistas = primeiros;
-        gravarEvento(evento);        
-
-        if (!estadoAplicativo.mostrouFinalistas) {
-          criarSemiFinais();
-          tocaTambores (function () {
-            primeiros.forEach (participante => {
-              const participanteIdx = evento.participantes.findIndex(part => part.nome === participante.nome);
-              $(".participante[meta-data=" + participanteIdx + "]").css("background-color", "rgba(255, 255, 255, 0.2)");
-            });
-            estadoAplicativo.mostrouFinalistas = true;
-          });
-          return;
-        }        
-        
-      }
-      $(".telaTabela").fadeOut(function () {
-        pararTabela ();
-        $(".telaPreSorteio").fadeIn();
-        iniciarPreSorteio();
+        return b.total - a.total;
       });
+      let pontuacaoAtual = -1;
+      participantesOrdenados.forEach((participante, i) => {
+        const pontuacaoParticipante = participante.total;
+        if (pontuacaoAtual != pontuacaoParticipante) {
+          pontuacaoAtual = pontuacaoParticipante;
+          if (primeiros.length < 4)
+            primeiros.push(participante);
+          else {
+            return;
+          }
+        } else {
+          if (primeiros.length < 4)
+            primeiros.push(participante);
+        }
+      });
+      if (primeiros.length > 4) {
+        // q caraio, vamos ter que sortear os empatados
+        const pontuacaoEmpatada = primeiros[primeiros.length - 1].total;
+        const empatados = primeiros.filter(participante => participante.total === pontuacaoEmpatada);
+        const naoEmpatados = primeiros.filter(participante => participante.total !== pontuacaoEmpatada);
+        primeiros = naoEmpatados;
+        while (primeiros.length < 4) {
+          const idx = Math.floor(Math.random() * empatados.length);
+          primeiros.push(empatados[idx]);
+          empatados.splice(idx, 1);
+        }
+      }
+      evento.semifinalistas = primeiros;
+      gravarEvento(evento);
+
+      if (!estadoAplicativo.mostrouFinalistas) {
+        criarSemiFinais();
+        tocaTambores(function () {
+          primeiros.forEach(participante => {
+            const participanteIdx = evento.participantes.findIndex(part => part.nome === participante.nome);
+            $(".participante[meta-data=" + participanteIdx + "]").css("background-color", "rgba(255, 255, 255, 0.2)");
+          });
+          estadoAplicativo.mostrouFinalistas = true;
+        });
+        return;
+      }
+
+    }
+    $(".telaTabela").fadeOut(function () {
+      paraMusicaFundoTabela();
+      $(".telaPreSorteio").fadeIn();
+      iniciarPreSorteio();
+    });
   }
 
-  function pararTabela () {
-    paraMusicaFundoTabela();
-  }
 
-  // preenche a tabela de participantes na pagina
+  // fills the participants table on the page
   function iniciarTabela() {
     //limpa tabela
-    setTimeout(tocaMusicaFundoTabela,200);
+    setTimeout(tocaMusicaFundoTabela, 200);
     $(".participante").remove();
     $(".proxima-rodada").off("click");
-    $(".proxima-rodada").on("click",proximaRodada);
+    $(".proxima-rodada").on("click", proximaRodada);
     const participantes = getParticipantes();
     const participantesOrdenados = JSON.parse(JSON.stringify(participantes)).sort((a, b) => {
       if (a.total === b.total) {
@@ -693,6 +687,7 @@ function animaEntradaResultado (i) {
 
   }
 
+  // configure donkey kong animation
   function configurarDK() {
     const canvas = document.getElementById("canvas");
     const scaleX = canvas.width / 1920;
@@ -780,8 +775,8 @@ function animaEntradaResultado (i) {
     animate();
   }
 
-  const audioOn = true;
 
+  // play the draw background music
   function tocaMusicaFundoSorteio() {
     if (!audioOn)
       return;
@@ -791,6 +786,14 @@ function animaEntradaResultado (i) {
     estadoAplicativo.backgroundSorteioAudio.play();
   }
 
+  // stop the draw background music
+  function paraMusicaFundoSorteio() {
+    if (!audioOn)
+      return;
+    estadoAplicativo.backgroundSorteioAudio.pause();
+  }
+
+  // play the table results background music
   function tocaMusicaFundoTabela() {
     if (!audioOn)
       return;
@@ -800,13 +803,14 @@ function animaEntradaResultado (i) {
     estadoAplicativo.backgroundTabelaAudio.play();
   }
 
+  // stop the table results background music
   function paraMusicaFundoTabela() {
     if (!audioOn)
       return;
     estadoAplicativo.backgroundTabelaAudio.pause();
   }
 
-
+  // play the victory background music
   function tocaMusicaFundoVitoria() {
     if (!audioOn)
       return;
@@ -816,13 +820,7 @@ function animaEntradaResultado (i) {
     estadoAplicativo.backgroundVitoria.play();
   }
 
-
-  function paraMusicaFundoSorteio() {
-    if (!audioOn)
-      return;
-    estadoAplicativo.backgroundSorteioAudio.pause();
-  }
-
+  // play toad screaming "chance time"
   function tocaChanceTime() {
     if (!audioOn)
       return;
@@ -830,6 +828,7 @@ function animaEntradaResultado (i) {
     audio.play();
   }
 
+  // play the drums sound effect
   function tocaTambores(f) {
     if (!audioOn)
       return;
@@ -838,6 +837,7 @@ function animaEntradaResultado (i) {
     audio.play();
   }
 
+  // play the jump sound effect
   function tocaJump() {
     if (!audioOn)
       return;
@@ -846,6 +846,7 @@ function animaEntradaResultado (i) {
 
   }
 
+  // play the donkey kong sound effect
   function tocaDK() {
     if (!audioOn)
       return;
@@ -854,6 +855,7 @@ function animaEntradaResultado (i) {
     audio.play();
   }
 
+  // play the draw sound effect from street fighter
   function tocaPartidaSorteada() {
     if (!audioOn)
       return;
@@ -861,6 +863,7 @@ function animaEntradaResultado (i) {
     audio.play();
   }
 
+  // init the match configuration for the current round
   function iniciaConfiguracaoPartida() {
     let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
     let rodadaAtual = getEvento().rodadaAtual;
@@ -872,14 +875,14 @@ function animaEntradaResultado (i) {
     }
   }
 
-
-  async function atualizarSorteioFinais () {
+  // automatic draw the semi-finals and final matches
+  async function atualizarSorteioFinais() {
     const evento = getEvento();
     let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
     const rodadaAtual = getEvento().rodadaAtual;
 
     if (rodadaAtual >= 5) {
-      const semiFinais = evento.rodadas[rodadaAtual-1];
+      const semiFinais = evento.rodadas[rodadaAtual - 1];
       const partida = semiFinais[partidaEmConfiguracao];
       const participantes = getParticipantes();
       const player1 = partida.player1;
@@ -896,6 +899,7 @@ function animaEntradaResultado (i) {
     return false;
   }
 
+  // copy the info from the draw to the event variable
   function atualizarPartidaEmConfiguração(objetoSorteio) {
     let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
     let rodadaAtual = getEvento().rodadaAtual;
@@ -907,6 +911,7 @@ function animaEntradaResultado (i) {
     }
   }
 
+  // returns with the console was already drawn
   function consoleJaSorteado(consoleIdx) {
     let rodadaAtual = getEvento().rodadaAtual;
     let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
@@ -920,6 +925,7 @@ function animaEntradaResultado (i) {
     return false;
   }
 
+  // return the numeber of participants that were not drawn yet
   function participantesNaoSorteados() {
     let acc = 0;
     let rodadaAtual = getEvento().rodadaAtual;
@@ -937,6 +943,7 @@ function animaEntradaResultado (i) {
 
   }
 
+  // returns if the participant was already drawn
   function participanteJaSorteado(participanteIdx) {
     let rodadaAtual = getEvento().rodadaAtual;
     let partidaEmConfiguracao = estadoAplicativo.partidaEmConfiguracao;
@@ -950,12 +957,13 @@ function animaEntradaResultado (i) {
     return false;
   }
 
+  // control the state machine of the draw
   async function maquinaEstadoSorteio() {
     const faster = 25;
     const rodadaAtual = getEvento().rodadaAtual;
     switch (estadoAplicativo.estadoSorteio) {
       case 0:
-        const estamosNasFinais = await atualizarSorteioFinais (); 
+        const estamosNasFinais = await atualizarSorteioFinais();
         if (estamosNasFinais) {
           estadoAplicativo.estadoSorteio = 4;
           break;
@@ -1049,20 +1057,20 @@ function animaEntradaResultado (i) {
         limpaSlotMachine();
         estadoAplicativo.estadoSorteio = 0;
         estadoAplicativo.partidaEmConfiguracao++;
-        let sorteiosFinais = false;        
-        if (rodadaAtual== 5 && estadoAplicativo.partidaEmConfiguracao == 2) {
+        let sorteiosFinais = false;
+        if (rodadaAtual == 5 && estadoAplicativo.partidaEmConfiguracao == 2) {
           sorteiosFinais = true;
         } else {
           if (rodadaAtual == 6 && estadoAplicativo.partidaEmConfiguracao == 1) {
             sorteiosFinais = true;
-          }          
+          }
         }
         if ((participantesNaoSorteados() - 2) == 0 || sorteiosFinais) {
           estadoAplicativo.partidaEmConfiguracao = 0;
-          gravarEvento(evento);          
+          gravarEvento(evento);
           $(".telaSorteio").fadeOut(function () {
             iniciarPartidas();
-            pararSorteio ();
+            pararSorteio();
             $(".telaPartidas").fadeIn();
           });
 
@@ -1072,6 +1080,7 @@ function animaEntradaResultado (i) {
     }
   }
 
+  // clean the slot machines
   function limpaSlotMachine() {
     $(".player3").fadeOut(function () {
       $(this).css('display', 'block');
@@ -1090,6 +1099,7 @@ function animaEntradaResultado (i) {
     }
   }
 
+  // begin the draw
   function iniciarSorteio() {
     // atualiza evento global (gambi) - o sorteio usa o evento global para não ter que gravar cada sorteio
     evento = getEvento();
@@ -1101,16 +1111,18 @@ function animaEntradaResultado (i) {
     estadoAplicativo.slotmachineAudio = new Audio('slotmachine.wav');
     estadoAplicativo.slotmachineAudio.autoplay = false;
     configurarDK();
-    
+
   }
 
-  function pararSorteio () {
+  // stop the draw
+  function pararSorteio() {
     estadoAplicativo.ligaSorteio = false;
     paraMusicaFundoSorteio();
     kd.stop();
 
   }
 
+  // start one slot machine
   async function iniciaSlotMachine(id, lista) {
     const element = document.getElementById(id);
     $(element).empty();
@@ -1131,6 +1143,7 @@ function animaEntradaResultado (i) {
     $("." + id + " .question").slideUp();
   }
 
+  // stop one slot machine
   function paraSlotMachine(id) {
     slotMachine[id].running = false;
     const sorteado = slotMachine[id].machine.active;
@@ -1140,7 +1153,8 @@ function animaEntradaResultado (i) {
   }
 
 
-  async function iniciaConfronto() {        
+  // start the type of match slot machine step
+  async function iniciaConfronto() {
     let naoSorteados = participantesNaoSorteados();
     // console.log(naoSorteados);
     let filtrar2x = false;
@@ -1181,10 +1195,7 @@ function animaEntradaResultado (i) {
     iniciaSlotMachine('confronto', listaOpcoesConfronto);
   }
 
-  function getHTMLdeUmConfronto(confronto, slot_data) {
-    return "<div class='opcao x" + (confronto + 2) + "' meta-data='" + confronto + "' slot-data='" + slot_data + "'></div>";
-  }
-
+  // finish the type of match slot machine step
   function paraConfronto() {
     const sorteado = paraSlotMachine('confronto');
     if (sorteado === 1) {
@@ -1199,6 +1210,13 @@ function animaEntradaResultado (i) {
     return sorteado;
   }
 
+  // creat the html of a match option
+  function getHTMLdeUmConfronto(confronto, slot_data) {
+    return "<div class='opcao x" + (confronto + 2) + "' meta-data='" + confronto + "' slot-data='" + slot_data + "'></div>";
+  }
+
+
+  // start the console slot machine step
   async function iniciaConsoles() {
     const listaOpcoesVideoGames = new Array();
     let add = 0;
@@ -1221,21 +1239,24 @@ function animaEntradaResultado (i) {
     iniciaSlotMachine('console', listaOpcoesVideoGames);
   }
 
+  // finish the console slot machine step
   function paraConsoles() {
     return paraSlotMachine('console');
   }
 
-
+  // start the participants slot machine step
   async function iniciaPlayer(playerNum, listaParticipantes) {
     const playerId = "player" + playerNum;
     iniciaSlotMachine(playerId, listaParticipantes);
   }
 
+  // finish the participants slot machine step
   function paraPlayer(playerNum) {
     const playerId = "player" + playerNum;
     return paraSlotMachine(playerId);
   }
 
+  // get the html of the participants that were not drawn yet
   function getHTMLParticipantesNaoSorteados() {
     const evento = getEvento();
     const participantes = evento.participantes;
@@ -1244,7 +1265,7 @@ function animaEntradaResultado (i) {
     let add = 0;
     for (let i = 0; i < numParticipantes; i++) {
       if (!participanteJaSorteado(i)) {
-        const opcao = getHTMLdeUmParticipante(participantes[i], i, add++);         
+        const opcao = getHTMLdeUmParticipante(participantes[i], i, add++);
         participantesNaoSorteados.push(opcao);
       }
     }
@@ -1252,58 +1273,52 @@ function animaEntradaResultado (i) {
 
   }
 
-  function getHTMLdeUmParticipante (participante, meta_data, slot_data) {
+  // get the html of a participant
+  function getHTMLdeUmParticipante(participante, meta_data, slot_data) {
     return "<div class='opcao' meta-data='" + meta_data + "' slot-data='" + slot_data + "'  style='background-image: url(" + participante.profileImg + "); background-size:cover;'></div>";
   }
 
+  // start the player 1 slot machine step
   async function iniciaPlayer1() {
     iniciaPlayer(1, getHTMLParticipantesNaoSorteados());
   }
 
+  // finish the player 1 slot machine step
   function paraPlayer1() {
     return paraPlayer(1);
   }
 
+  // start the player 2 slot machine step
   async function iniciaPlayer2() {
     iniciaPlayer(2, getHTMLParticipantesNaoSorteados());
   }
 
+  // finish the player 2 slot machine step
   function paraPlayer2() {
     return paraPlayer(2);
   }
 
-
+  // start the player 3 slot machine step
   async function iniciaPlayer3() {
     iniciaPlayer(3, getHTMLParticipantesNaoSorteados());
   }
 
+  // finish the player 3 slot machine step
   function paraPlayer3() {
     return paraPlayer(3);
   }
 
+  // start the player 4 slot machine step
   async function iniciaPlayer4() {
     iniciaPlayer(4, getHTMLParticipantesNaoSorteados());
   }
 
+  // finish the player 4 slot machine step
   function paraPlayer4() {
     return paraPlayer(4);
   }
 
-  function getEstacoesPorConsole(jogos) {
-    const estacoesPorConsole = {};
-
-    jogos.forEach(jogo => {
-      if (!estacoesPorConsole[jogo.console]) {
-        estacoesPorConsole[jogo.console] = [];
-      }
-      if (!estacoesPorConsole[jogo.console].includes(jogo.estacao)) {
-        estacoesPorConsole[jogo.console].push(jogo.estacao);
-      }
-    });
-
-    return estacoesPorConsole;
-  }
-
+  // start the games slot machine step
   async function iniciaJogos() {
     const listaOpcoesJogos = new Array();
     const rodadaAtual = getEvento().rodadaAtual;
@@ -1323,15 +1338,17 @@ function animaEntradaResultado (i) {
 
   }
 
+  // finish the games slot machine step
   function paraJogos() {
     return paraSlotMachine('jogo');
   }
 
-
+  // get the games that are available for the current round of a specific console and match type
   function obtemJogos(console, confronto) {
     return jogos.filter(jogo => jogo.console === console && jogo.estacao === confronto);
   }
 
+  // handle the event of a winning 
   function venceu() {
     let evento = getEvento();
     let participantes = evento.participantes;
@@ -1357,7 +1374,7 @@ function animaEntradaResultado (i) {
       } else {
         //pergunta = ganhadores + " venceu a partida?";
         pergunta = ganhadores + " won the match?";
-        
+
       }
       const result = confirm(pergunta);
       if (result) {
@@ -1367,9 +1384,9 @@ function animaEntradaResultado (i) {
             participantes[idx]["rodada" + numRodada] = 3;
           } else if (numRodada == 5) {
             participantes[idx]["rodada" + numRodada] = 12;
-          } else if (numRodada ==6) {
+          } else if (numRodada == 6) {
             participantes[idx]["rodada" + numRodada] = 24;
-          }          
+          }
         });
         perdedoresIdx.forEach(idx => {
           const numRodada = evento.rodadaAtual;
@@ -1379,7 +1396,7 @@ function animaEntradaResultado (i) {
             participantes[idx]["rodada" + numRodada] = 6;
           } else if (numRodada == 6) {
             participantes[idx]["rodada" + numRodada] = 18;
-          }          
+          }
         });
         gravarEvento(evento);
         $(this).parents(".partida").fadeOut(devoIrParaTabela);
@@ -1393,14 +1410,14 @@ function animaEntradaResultado (i) {
     }
   }
 
-
+  // handle the event of a draw
   function empatou() {
     let evento = getEvento();
     let participantes = evento.participantes;
     $(this).parents(".partida").find(".botoes button").attr("disabled", true);
     let ganhadoresIdx = [];
     $(this).parents(".partida").find("input[type=checkbox]").each(function (i, element) {
-      const jogador = $(element).attr("meta-data");    
+      const jogador = $(element).attr("meta-data");
       ganhadoresIdx.push(jogador);
     });
     //const result = confirm("Tem certeza que a partida empatou?");
@@ -1415,9 +1432,10 @@ function animaEntradaResultado (i) {
     } else {
       $(this).parents(".partida").find(".botoes button").attr("disabled", false);
     }
-    
+
   }
 
+  // returns with the next screen should be the table screen or the victory screen
   function devoIrParaTabela() {
     if ($(".partida:visible").length == 0) {
       //alert("Todas as partidas foram finalizadas!");
@@ -1435,7 +1453,7 @@ function animaEntradaResultado (i) {
           iniciarTabela();
           $(".telaTabela").fadeIn();
         });
-      }      
+      }
     }
   }
 
@@ -1450,6 +1468,7 @@ function animaEntradaResultado (i) {
     });
   }
 
+  // adjust the aspect ratio of the screen after resizing
   function ajusteAspectRatio() {
     let correction = 1;
     let w = window.innerWidth;
@@ -1466,26 +1485,15 @@ function animaEntradaResultado (i) {
 
   }
 
-  // executar codigo js ao iniciar a pagina
+  // excute the code as soon as the page loads
   document.addEventListener("DOMContentLoaded", function () {
     iniciarPagina();
 
     window.addEventListener('resize', () => {
       ajusteAspectRatio();
-    });    
+    });
     ajusteAspectRatio();
   });
-
-
-
-
-
-  const autoReload = false;
-  if (autoReload) {
-    setInterval(function () {
-      location.reload();
-    }, 5000);
-  }
 
 </script>
 
@@ -1494,9 +1502,6 @@ function animaEntradaResultado (i) {
     font-family: "MarioKart";
     src: url(super-mario-kart.ttf) format("truetype");
   }
-
-
-
 
   html,
   body {
@@ -1615,76 +1620,81 @@ function animaEntradaResultado (i) {
     transition: all 5s;
     text-align: center;
   }
-  
-.box-resultados {
-  display: flex;
-  opacity: 0;
-  text-shadow: -1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999;
-  font-family: "MarioKart", Verdana, Tahoma;
-  /*border: 1px solid red;*/
-  position: absolute;
-  width: 50%;
-  height: 50%;
-  display: block;
-  justify-content: center;
-  top: 16.5%;
-  align-items: center;
-  
-}
-.figurante .nome {
-  visibility: hidden;
-}
 
-.box-resultados .participante {
-  
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /*border: 1px solid red;*/
-  padding-bottom: 0.75vh;
-  margin-right: -300vw;
-  
-}
+  .box-resultados {
+    display: flex;
+    opacity: 0;
+    text-shadow: -1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999;
+    font-family: "MarioKart", Verdana, Tahoma;
+    /*border: 1px solid red;*/
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    display: block;
+    justify-content: center;
+    top: 16.5%;
+    align-items: center;
 
-.box-resultados .participante .nome {
+  }
+
+  .figurante .nome {
+    visibility: hidden;
+  }
+
+  .box-resultados .participante {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*border: 1px solid red;*/
+    padding-bottom: 0.75vh;
+    margin-right: -300vw;
+
+  }
+
+  .box-resultados .participante .nome {
     width: 40%;
-}
+  }
 
-.box-resultados .participante:nth-child(1) {
-  border-bottom: 2px solid black;
-}
+  .box-resultados .participante:nth-child(1) {
+    border-bottom: 2px solid black;
+  }
 
-.box-resultados .participante:nth-child(odd) {
-  background-color: rgba(128, 128, 128, 0.1);
-}
+  .box-resultados .participante:nth-child(odd) {
+    background-color: rgba(128, 128, 128, 0.1);
+  }
 
-.box-resultados .participante:nth-child(even) {
-  background-color: rgba(128, 128, 128, 0.2);
-}
+  .box-resultados .participante:nth-child(even) {
+    background-color: rgba(128, 128, 128, 0.2);
+  }
 
-  .primeiro-lugar, .segundo-lugar, .terceiro1-lugar, .terceiro2-lugar
-   {
+  .primeiro-lugar,
+  .segundo-lugar,
+  .terceiro1-lugar,
+  .terceiro2-lugar {
     transform: scale(0);
     display: flex;
     transition: all 5s;
     justify-content: center;
     align-items: center;
     border: 5px solid black;
-}
+  }
 
-.primeiro-lugar.animate, .congratulations.animate {
-  transform: scale(1);
-}
+  .primeiro-lugar.animate,
+  .congratulations.animate {
+    transform: scale(1);
+  }
 
-.segundo-lugar.animate {
-  transform: scale(0.7);
-}
+  .segundo-lugar.animate {
+    transform: scale(0.7);
+  }
 
-.terceiro1-lugar.animate, .terceiro2-lugar.animate {
-  transform: scale(0.35);
-}
+  .terceiro1-lugar.animate,
+  .terceiro2-lugar.animate {
+    transform: scale(0.35);
+  }
 
-.primeiro-lugar {
+  .primeiro-lugar {
     position: relative;
     display: flex;
     /*top: -14%;
@@ -1733,7 +1743,7 @@ function animaEntradaResultado (i) {
   }
 
   .animacao-vitoria {
-   /* position: relative;
+    /* position: relative;
     display: flex;
     width: 31%;
     top: 59%;
@@ -1743,8 +1753,8 @@ function animaEntradaResultado (i) {
     display: flex;
     width: 30%;
     height: 40%;
-    
-    top: 29.5%; 
+
+    top: 29.5%;
     left: 35%;
     z-index: 1;
   }
@@ -1757,13 +1767,14 @@ function animaEntradaResultado (i) {
     opacity: 0;
     top: 29.5%;
     left: 5%
-    /*position: relative;
+      /*position: relative;
     width: 31%;
     top: 17.5%;
     left: 35%;
     z-index: 2;
     opacity: 0;*/
   }
+
   .banner {
     padding-top: 5%;
     padding-bottom: 25px;
@@ -2293,7 +2304,7 @@ function animaEntradaResultado (i) {
   }
 </style>
 
-<div class="w-100 h-100 tela1 tabelaCompetidores telaTabela" >
+<div class="w-100 h-100 tela1 tabelaCompetidores telaTabela">
   <div class="proxima-rodada">
     <img src="marioparty3.png">
     <p class="strokeme">Next Round</p>
@@ -2348,7 +2359,7 @@ function animaEntradaResultado (i) {
     <div class="col">
     </div>
   </div>
-  
+
 </div>
 <div class="w-100 h-100 tela2 telaPreSorteio" style="display: none;">
   <video id="video" class="video w-100 h-100">
@@ -2437,7 +2448,7 @@ function animaEntradaResultado (i) {
 </div>
 <div class="w-100 h-100 tela5 telaVitoria" style="display: none;">
   <img src="vitoria.gif" class="animacao-vitoria">
-  <img src="podio.png" class="podio" >
+  <img src="podio.png" class="podio">
   <div class="primeiro-lugar"></div>
   <div class="segundo-lugar"></div>
   <div class="terceiro1-lugar"></div>
@@ -2446,1797 +2457,1840 @@ function animaEntradaResultado (i) {
   <div class="congratulations"></div>
   <button class="btn btn-danger reset">Reset?</button>
 
-    
+
 </div>
-  <script>
-    const jogos = [
-    {
-        "console": "Virtual Boy",
-        "estacao": "x2",
-        "jogo": "Street Fighter 2",
-        "desc": ""
-    },
-    {
-        "console": "Virtual Boy",
-        "estacao": "x2",
-        "jogo": "Mario Tennis",
-        "desc": ""
-    },
-    {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Street Fighter 2",
-        "desc": ""
-    },
-    {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Mario Kart",
-        "desc": ""
-    },
-    {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Mario Tennis",
-        "desc": ""
+<script>
+
+  //EDIT HERE: add the championship players (edit name and its image - 195x177px)
+  // variable that controls the event
+  let evento = {
+    participantes: [
+      { nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "blake.png" },
+      { nome: "Tom Hanks", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "tom.png" },
+      { nome: "Brad Pitt", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "brad.png" },
+      { nome: "Keanu Reeves", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "keanu.png" },
+      { nome: "Jennifer Lopez", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "jennifer.png" },
+      { nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "julia.png" },
+      { nome: "Robert Downey Jr.", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "robert.png" },
+      { nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "aniston.png" },
+      { nome: "Henry Cavill", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "henry.png" },
+      { nome: "Scarlett Johansson", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "scarlett.png" },
+      { nome: "Leonardo DiCaprio", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "leo.png" },
+      { nome: "Tom Cruise", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "cruise.png" },
+      { nome: "Sandra Bullock", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "sandra.png" },
+      { nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "chris.png" },
+      { nome: "Angelina Jolie", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "angelina.png" },
+      { nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "george.png" },
+    ],
+    rodadaAtual: 1, // round number - do not change it
+    rodadas: new Array(4), // 4 rounds - do not change it, code is expecting 4 rounds for now
+  }
+
+  // EDIT HERE: add the consoles you want to use in the event
+  // you can add more consoles/images, but you need to add the games for them in the next section
+  const listaDeVideoGames = [
+    { nome: "Dreamcast", imagem: "dreamcast.png" },
+    { nome: "Game Boy", imagem: "gameboy.png" },
+    { nome: "GameCube", imagem: "gamecube.png" },
+    { nome: "GBA", imagem: "gba.png" },
+    { nome: "GBC", imagem: "gbc.png" },
+    { nome: "Mega Drive", imagem: "megadrive.png" },
+    { nome: "N64", imagem: "n64.png" },
+    { nome: "PS1", imagem: "ps1.png" },
+    { nome: "PS2", imagem: "ps2.png" },
+    { nome: "NES", imagem: "nes.png" },
+    { nome: "SNES", imagem: "snes.png" },
+    { nome: "Virtual Boy", imagem: "virtualboy.png" },
+    { nome: "Wii", imagem: "wii.png" },
+    { nome: "Xbox", imagem: "xbox.png" }
+  ];
+
+  // EDIT HERE: add the games for each console
+  // use the console name you defined in the previous section
+  // define if game is x2, x3 or x4
+  // desc can be used to add more information about how the game will be played (per example - the settings that need to be used and some aditional rules)
+  const jogos = [
+    {
+      "console": "Virtual Boy",
+      "estacao": "x2",
+      "jogo": "Street Fighter 2",
+      "desc": ""
+    },
+    {
+      "console": "Virtual Boy",
+      "estacao": "x2",
+      "jogo": "Mario Tennis",
+      "desc": ""
+    },
+    {
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Street Fighter 2",
+      "desc": ""
+    },
+    {
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Mario Kart",
+      "desc": ""
+    },
+    {
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Mario Tennis",
+      "desc": ""
+    },
+    {
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Dead or Alive 2",
+      "desc": ""
+    },
+    {
+      "console": "Xbox",
+      "estacao": "x2",
+      "jogo": "DefJam",
+      "desc": ""
+    },
+    {
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Super Smash Bros",
+      "desc": ""
+    },
+    {
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Rhythm Heaven Fever",
+      "desc": "Ringside 2p"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Dead or Alive 2",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Tetris",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x2",
-        "jogo": "DefJam",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Battle Arena Toshiden Remix ",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Super Smash Bros",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Bloody Roar 4",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Rhythm Heaven Fever",
-        "desc": "Ringside 2p"
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Super Mario Bros. 3 (Modo de batalha)",
+      "desc": "(Modo de batalha)"
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Tetris",
-        "desc": ""
+      "console": "GBA",
+      "estacao": "x2",
+      "jogo": "Mario Kart: Super Circuit",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Battle Arena Toshiden Remix ",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Tetris DX",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Bloody Roar 4",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Bomberman",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Super Mario Bros. 3 (Modo de batalha)",
-        "desc": "(Modo de batalha)"
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Killer Instinst",
+      "desc": ""
     },
     {
-        "console": "GBA",
-        "estacao": "x2",
-        "jogo": "Mario Kart: Super Circuit",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Mario Kart",
+      "desc": ""
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Tetris DX",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Street Fighter 3",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Bomberman",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x2",
+      "jogo": "Burnout 3",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Killer Instinst",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Mario Strikers",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Mario Kart",
-        "desc": ""
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Mario Kart",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Street Fighter 3",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Donkey Kong Land 2 (Modo de Duelo)",
+      "desc": "modo duelo"
     },
     {
-        "console": "Xbox",
-        "estacao": "x2",
-        "jogo": "Burnout 3",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "XMen VS Street Fighter ",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Mario Strikers",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Star Wars Battlefront",
+      "desc": ""
     },
-    {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Mario Kart",
-        "desc": ""
-    },
-    {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Donkey Kong Land 2 (Modo de Duelo)",
-        "desc": "modo duelo"
-    },
-    {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "XMen VS Street Fighter ",
-        "desc": ""
-    },
-    {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Star Wars Battlefront",
-        "desc": ""
-    },
-    {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Contra",
-        "desc": "sem continue"
-    },    
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Super Mario Bros. Deluxe",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Contra",
+      "desc": "sem continue"
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Mortal Kombat 3",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Super Mario Bros. Deluxe",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Rock n Roll Racing",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Mortal Kombat 3",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "WCW vs NWO",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Rock n Roll Racing",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Street Fighter Alpha 3",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Street Fighter Alpha 3",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x2",
-        "jogo": "Halo 2",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x2",
+      "jogo": "Halo 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Mario Tennis",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Mario Tennis",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Wii Sports Resort",
-        "desc": "Minigame Espada"
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Wii Sports Resort",
+      "desc": "Minigame Espada"
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Contra: The Alien Wars",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Contra: The Alien Wars",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "X-Men Children of the Atom ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "X-Men Children of the Atom ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Star Wars Battlefront 2",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Star Wars Battlefront 2",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Double Dragon II: The Revenge",
-        "desc": "sem continue"
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Double Dragon II: The Revenge",
+      "desc": "sem continue"
     },
     {
-        "console": "GBA",
-        "estacao": "x2",
-        "jogo": "Super Mario Advance?",
-        "desc": ""
+      "console": "GBA",
+      "estacao": "x2",
+      "jogo": "Super Mario Advance?",
+      "desc": ""
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Wario Land 3",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Wario Land 3",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "GoldenAxe",
-        "desc": "duelo"
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "GoldenAxe",
+      "desc": "duelo"
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Street Fighter Alpha 2",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Street Fighter Alpha 2",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Super Smash Bros",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Super Smash Bros",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Project Justice: Rival Schools 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Project Justice: Rival Schools 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x2",
-        "jogo": "Marvel vs Capcom 2",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x2",
+      "jogo": "Marvel vs Capcom 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "FZero GX",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "FZero GX",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Wii Sports Resort",
-        "desc": "Mini Game do Arco e Flecha"
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Wii Sports Resort",
+      "desc": "Mini Game do Arco e Flecha"
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Kirby's Dream Land 2 (Modo de Duelo)",
-        "desc": "modo duelo"
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Kirby's Dream Land 2 (Modo de Duelo)",
+      "desc": "modo duelo"
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Marvel Super Heroes ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Marvel Super Heroes ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Tekken 5",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Tekken 5",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Ice Climber",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Ice Climber",
+      "desc": ""
     },
     {
-        "console": "GBA",
-        "estacao": "x2",
-        "jogo": "WarioWare, Inc.: Mega Microgames!",
-        "desc": ""
+      "console": "GBA",
+      "estacao": "x2",
+      "jogo": "WarioWare, Inc.: Mega Microgames!",
+      "desc": ""
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Mario Tennis",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Mario Tennis",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Yuyu Hakusho Makyo Toitsusen",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Yuyu Hakusho Makyo Toitsusen",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Contra",
-        "desc": "sobreviver sem continue"
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Contra",
+      "desc": "sobreviver sem continue"
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Fzero 64",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Fzero 64",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Hydro Thunder",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Hydro Thunder",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x2",
-        "jogo": "Tony Hawk's Pro Skater 3",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x2",
+      "jogo": "Tony Hawk's Pro Skater 3",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Sonic Adventure 2 Battle",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Sonic Adventure 2 Battle",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Wii Sports",
-        "desc": "Tenis"
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Wii Sports",
+      "desc": "Tenis"
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Tennis",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Tennis",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Bloody Roar 2 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Bloody Roar 2 ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "TimeSplitters: Future Perfect",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "TimeSplitters: Future Perfect",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Teenage Mutant Ninja Turtles II: The Arcade Game",
-        "desc": "sem continue"
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Teenage Mutant Ninja Turtles II: The Arcade Game",
+      "desc": "sem continue"
     },
     {
-        "console": "GBA",
-        "estacao": "x2",
-        "jogo": "Bomberman Tournament",
-        "desc": ""
+      "console": "GBA",
+      "estacao": "x2",
+      "jogo": "Bomberman Tournament",
+      "desc": ""
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Bomberman Quest",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Bomberman Quest",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Street of Rage 2",
-        "desc": "versus"
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Street of Rage 2",
+      "desc": "versus"
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Tetris Battle Gaiden",
-        "desc": "versus"
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Tetris Battle Gaiden",
+      "desc": "versus"
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Star Fox Multiplayer",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Star Fox Multiplayer",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Ikaruga",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Ikaruga",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x2",
-        "jogo": "Street Fighter Anniversary Collection",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x2",
+      "jogo": "Street Fighter Anniversary Collection",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Tony Hawk's Pro Skater 4",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Tony Hawk's Pro Skater 4",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Wii Sports",
-        "desc": "Boxe"
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Wii Sports",
+      "desc": "Boxe"
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Bomberman GB",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Bomberman GB",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Tony Hawk Pro Skater ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Tony Hawk Pro Skater ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Ratchet: Deadlocked",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Ratchet: Deadlocked",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Dr. Mario",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Dr. Mario",
+      "desc": ""
     },
     {
-        "console": "GBA",
-        "estacao": "x2",
-        "jogo": "Sonic Advance 3",
-        "desc": ""
+      "console": "GBA",
+      "estacao": "x2",
+      "jogo": "Sonic Advance 3",
+      "desc": ""
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Wario Land II",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Wario Land II",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Gunstar Heroes ",
-        "desc": "sobreviver sem continue"
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Gunstar Heroes ",
+      "desc": "sobreviver sem continue"
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Ultimate Mortal Kombat 3",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Ultimate Mortal Kombat 3",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Wave Racer",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Wave Racer",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Wacky Races: Starring Dastardly and Muttley",
-        "desc": "quem morrer primeiro perde"
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Wacky Races: Starring Dastardly and Muttley",
+      "desc": "quem morrer primeiro perde"
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Donkey Konga 2",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Donkey Konga 2",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x2",
-        "jogo": "Mario Sports Mi",
-        "desc": "Queimada"
+      "console": "Wii",
+      "estacao": "x2",
+      "jogo": "Mario Sports Mi",
+      "desc": "Queimada"
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Kirby's Star Stacker",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Kirby's Star Stacker",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Tony Hawk Pro Skater 2 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Tony Hawk Pro Skater 2 ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "SoulCalibur II",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "SoulCalibur II",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Pro Wrestling",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Pro Wrestling",
+      "desc": ""
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Crystalis",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Crystalis",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Samurai Shodown",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Samurai Shodown",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "International Superstar Soccer Deluxe",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "International Superstar Soccer Deluxe",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Bomberman 64",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Bomberman 64",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Virtua Tennis",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Virtua Tennis",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Bomberman",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Bomberman",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "NBA Jam Tournament Edition",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "NBA Jam Tournament Edition",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Tekken 3 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Tekken 3 ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Mortal Kombat: Deception",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Mortal Kombat: Deception",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x2",
-        "jogo": "Excitebike ",
-        "desc": "Modo Vs."
+      "console": "NES",
+      "estacao": "x2",
+      "jogo": "Excitebike ",
+      "desc": "Modo Vs."
     },
     {
-        "console": "GBC",
-        "estacao": "x2",
-        "jogo": "Top Gear Pocket 2",
-        "desc": ""
+      "console": "GBC",
+      "estacao": "x2",
+      "jogo": "Top Gear Pocket 2",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Micro Machines 2 Turbo Tournament",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Micro Machines 2 Turbo Tournament",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "NBA Jam Tournament",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "NBA Jam Tournament",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "San Francisco Rush",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "San Francisco Rush",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Power Stone",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Power Stone",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "SSX",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "SSX",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "F1 Race",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "F1 Race",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Crash Team Racing ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Crash Team Racing ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Street Fighter Anniversary Collection",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Street Fighter Anniversary Collection",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Contra",
-        "desc": "sobreviver sem continue"
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Contra",
+      "desc": "sobreviver sem continue"
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Metal Warriors",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Metal Warriors",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Star Wars Episode 1 Racer",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Star Wars Episode 1 Racer",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Power Stone 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Power Stone 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "WaveRace",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "WaveRace",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x2",
-        "jogo": "Super R.C. Pro-Am",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x2",
+      "jogo": "Super R.C. Pro-Am",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Vigilante 8 2nd Offence ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Vigilante 8 2nd Offence ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Virtua Fighter 4: Evolution",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Virtua Fighter 4: Evolution",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Rock â€˜n Roll Racing",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Rock â€˜n Roll Racing",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Battletoads",
-        "desc": "gameover perde"
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Battletoads",
+      "desc": "gameover perde"
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Beetle Adventure Racing",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Beetle Adventure Racing",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Garou Mark of the Wolves",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Garou Mark of the Wolves",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x2",
-        "jogo": "Sonic 2 Battle",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x2",
+      "jogo": "Sonic 2 Battle",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Revolt ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Revolt ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Tony Hawk's Pro Skater 3",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Tony Hawk's Pro Skater 3",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Road Rash 2",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Road Rash 2",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Wildguns",
-        "desc": "gameover perde"
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Wildguns",
+      "desc": "gameover perde"
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Ridge Racer 64",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Ridge Racer 64",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x2",
-        "jogo": "Virtua Fighter 3TB",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x2",
+      "jogo": "Virtua Fighter 3TB",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Super Puzzle Fighter 2 Turbo ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Super Puzzle Fighter 2 Turbo ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Gran Turismo 4",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Gran Turismo 4",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Formula One",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Formula One",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Sunset Riders",
-        "desc": "gameover perde"
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Sunset Riders",
+      "desc": "gameover perde"
     },
     {
-        "console": "N64",
-        "estacao": "x2",
-        "jogo": "Turok Rage Wars",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x2",
+      "jogo": "Turok Rage Wars",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Bushido Blade 2 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Bushido Blade 2 ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "Burnout 3: Takedown",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "Burnout 3: Takedown",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Columns III Revenge of the Columns",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Columns III Revenge of the Columns",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Gundam Endless Duel",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Gundam Endless Duel",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Street Fighter Alpha 3 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Street Fighter Alpha 3 ",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x2",
-        "jogo": "TimeSplitters: Future Perfect",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x2",
+      "jogo": "TimeSplitters: Future Perfect",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Skitchin",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Skitchin",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Power Rangers - The Fightning",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Power Rangers - The Fightning",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Twisted Metal 2 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Twisted Metal 2 ",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "NBA Jam Tournament",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "NBA Jam Tournament",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x2",
-        "jogo": "Street Fighter 2 World Warrior",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x2",
+      "jogo": "Street Fighter 2 World Warrior",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Mortal Kombat Trilogy ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Mortal Kombat Trilogy ",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "International Superstar Soccer Deluxe",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "International Superstar Soccer Deluxe",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Gran Turismo 2 ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Gran Turismo 2 ",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Super Volleyball",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Super Volleyball",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Soul Blade ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Soul Blade ",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Top Gear 2",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Top Gear 2",
+      "desc": ""
     },
     {
-        "console": "PS1",
-        "estacao": "x2",
-        "jogo": "Bomberman World ",
-        "desc": ""
+      "console": "PS1",
+      "estacao": "x2",
+      "jogo": "Bomberman World ",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Greatest Heavyweights",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Greatest Heavyweights",
+      "desc": ""
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Sonic 2",
-        "desc": "versus"
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Sonic 2",
+      "desc": "versus"
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Sonic 3",
-        "desc": "versus"
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Sonic 3",
+      "desc": "versus"
     },
     {
-        "console": "Mega Drive",
-        "estacao": "x2",
-        "jogo": "Road Rash 3",
-        "desc": ""
+      "console": "Mega Drive",
+      "estacao": "x2",
+      "jogo": "Road Rash 3",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Super Bomberman 2",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Super Bomberman 2",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Goldeneye 007",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Goldeneye 007",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Power Stone 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Power Stone 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x3",
-        "jogo": "DefJam",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x3",
+      "jogo": "DefJam",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Super Smash Bros",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Super Smash Bros",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x3",
-        "jogo": "Super Smash Bros. Brawl",
-        "desc": ""
+      "console": "Wii",
+      "estacao": "x3",
+      "jogo": "Super Smash Bros. Brawl",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "Tetris",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "Tetris",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "Crash Nitro Kart",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "Crash Nitro Kart",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x3",
-        "jogo": "Super Spike V'Ball / Nintendo World Cup",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x3",
+      "jogo": "Super Spike V'Ball / Nintendo World Cup",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "International Superstar Soccer Deluxe",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "International Superstar Soccer Deluxe",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Mario Tennis",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Mario Tennis",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Sega Rally 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Sega Rally 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x3",
-        "jogo": "Burnout 3",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x3",
+      "jogo": "Burnout 3",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Mario Strikers",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Mario Strikers",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x3",
-        "jogo": "Mario Kart Wii",
-        "desc": ""
+      "console": "Wii",
+      "estacao": "x3",
+      "jogo": "Mario Kart Wii",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "Bomberman GB",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "Bomberman GB",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "TimeSplitters 2",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "TimeSplitters 2",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x3",
-        "jogo": "R.C. Pro-Am II",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x3",
+      "jogo": "R.C. Pro-Am II",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Pieces",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Pieces",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Mario Kart",
-        "desc": "corrida"
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Mario Kart",
+      "desc": "corrida"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Virtua Tennis 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Virtua Tennis 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x3",
-        "jogo": "Halo 2",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x3",
+      "jogo": "Halo 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Mario Tennis",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Mario Tennis",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "Kirby's Star Stacker",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "Kirby's Star Stacker",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "TimeSplitters: Future Perfect",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "TimeSplitters: Future Perfect",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x3",
-        "jogo": "Ivan \"Ironman\" Stewart's Super Off Road",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x3",
+      "jogo": "Ivan \"Ironman\" Stewart's Super Off Road",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Top Gear 3000 ",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Top Gear 3000 ",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "ChuChu Rocket!",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "ChuChu Rocket!",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x3",
-        "jogo": "Marvel vs Capcom 2",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x3",
+      "jogo": "Marvel vs Capcom 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "FZero GX",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "FZero GX",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "NBA Jam Tournament Edition",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "NBA Jam Tournament Edition",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "Micro Machines V4",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "Micro Machines V4",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x3",
-        "jogo": "Bomberman II",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x3",
+      "jogo": "Bomberman II",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Capcom's Soccer Shootout",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Capcom's Soccer Shootout",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Super Smash Bros",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Super Smash Bros",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Outtrigger",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Outtrigger",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x3",
-        "jogo": "Tony Hawk's Pro Skater 3",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x3",
+      "jogo": "Tony Hawk's Pro Skater 3",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Sonic Adventure 2 Battle",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Sonic Adventure 2 Battle",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "F1 Race",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "F1 Race",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "Bomberman Hardball",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "Bomberman Hardball",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "College Slam",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "College Slam",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Perfect Dark",
-        "desc": "combat simulator - explosives - 8 simulants"
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Perfect Dark",
+      "desc": "combat simulator - explosives - 8 simulants"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Sonic Shuffle",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Sonic Shuffle",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x3",
-        "jogo": "Street Fighter Anniversary Collection",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x3",
+      "jogo": "Street Fighter Anniversary Collection",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Tony Hawk's Pro Skater 4",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Tony Hawk's Pro Skater 4",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "Kirby's Dream Land 2",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "Kirby's Dream Land 2",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "Gauntlet: Dark Legacy",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "Gauntlet: Dark Legacy",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Saturday Night Slam Masters",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Saturday Night Slam Masters",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Snowboard Kids 2",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Snowboard Kids 2",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Re-Volt",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Re-Volt",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Donkey Konga 2",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Donkey Konga 2",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "Super R.C. Pro-Am",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "Super R.C. Pro-Am",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "Worms 3D",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "Worms 3D",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "FIFA: Road to World Cup 98",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "FIFA: Road to World Cup 98",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x3",
-        "jogo": "Mario Kart",
-        "desc": "battle mode"
+      "console": "N64",
+      "estacao": "x3",
+      "jogo": "Mario Kart",
+      "desc": "battle mode"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Toy Commander",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Toy Commander",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Bomberman",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Bomberman",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x3",
-        "jogo": "Top Gear Pocket 2",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x3",
+      "jogo": "Top Gear Pocket 2",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "Tony Hawk's Pro Skater 4",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "Tony Hawk's Pro Skater 4",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Hanna Barbera's Turbo Toons",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Hanna Barbera's Turbo Toons",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x3",
-        "jogo": "Zombie Revenge",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x3",
+      "jogo": "Zombie Revenge",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "SSX",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "SSX",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x3",
-        "jogo": "International Superstar Soccer 3",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x3",
+      "jogo": "International Superstar Soccer 3",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Looney Tunes B-Ball",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Looney Tunes B-Ball",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Mario Golf",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Mario Golf",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Micro Machines 2: Turbo Tournament",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Micro Machines 2: Turbo Tournament",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x3",
-        "jogo": "Sonic 2 Battle",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x3",
+      "jogo": "Sonic 2 Battle",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "NBA Jam: Tournament Edition",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "NBA Jam: Tournament Edition",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Street Hockey '95",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Street Hockey '95",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Puyo Puyo 2",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Puyo Puyo 2",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "Tiny Toon Adventures Wacky Sports",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "Tiny Toon Adventures Wacky Sports",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x3",
-        "jogo": "WWF Raw",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x3",
+      "jogo": "WWF Raw",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Super Bomberman 2",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Super Bomberman 2",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Goldeneye 007",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Goldeneye 007",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Power Stone 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Power Stone 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x4",
-        "jogo": "DefJam",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x4",
+      "jogo": "DefJam",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Super Smash Bros",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Super Smash Bros",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x4",
-        "jogo": "Super Smash Bros. Brawl",
-        "desc": ""
+      "console": "Wii",
+      "estacao": "x4",
+      "jogo": "Super Smash Bros. Brawl",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "Tetris",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "Tetris",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "Crash Nitro Kart",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "Crash Nitro Kart",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x4",
-        "jogo": "Super Spike V'Ball / Nintendo World Cup",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x4",
+      "jogo": "Super Spike V'Ball / Nintendo World Cup",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "International Superstar Soccer Deluxe",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "International Superstar Soccer Deluxe",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Mario Tennis",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Mario Tennis",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Sega Rally 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Sega Rally 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x4",
-        "jogo": "Burnout 3",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x4",
+      "jogo": "Burnout 3",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Mario Strikers",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Mario Strikers",
+      "desc": ""
     },
     {
-        "console": "Wii",
-        "estacao": "x4",
-        "jogo": "Mario Kart Wii",
-        "desc": ""
+      "console": "Wii",
+      "estacao": "x4",
+      "jogo": "Mario Kart Wii",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "Bomberman GB",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "Bomberman GB",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "TimeSplitters 2",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "TimeSplitters 2",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x4",
-        "jogo": "R.C. Pro-Am II",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x4",
+      "jogo": "R.C. Pro-Am II",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Pieces",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Pieces",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Mario Kart",
-        "desc": "corrida"
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Mario Kart",
+      "desc": "corrida"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Virtua Tennis 2",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Virtua Tennis 2",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x4",
-        "jogo": "Halo 2",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x4",
+      "jogo": "Halo 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Mario Tennis",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Mario Tennis",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "Kirby's Star Stacker",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "Kirby's Star Stacker",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "TimeSplitters: Future Perfect",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "TimeSplitters: Future Perfect",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x4",
-        "jogo": "Ivan \"Ironman\" Stewart's Super Off Road",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x4",
+      "jogo": "Ivan \"Ironman\" Stewart's Super Off Road",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Top Gear 3000 ",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Top Gear 3000 ",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "ChuChu Rocket!",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "ChuChu Rocket!",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x4",
-        "jogo": "Marvel vs Capcom 2",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x4",
+      "jogo": "Marvel vs Capcom 2",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "FZero GX",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "FZero GX",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "NBA Jam Tournament Edition",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "NBA Jam Tournament Edition",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "Micro Machines V4",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "Micro Machines V4",
+      "desc": ""
     },
     {
-        "console": "NES",
-        "estacao": "x4",
-        "jogo": "Bomberman II",
-        "desc": ""
+      "console": "NES",
+      "estacao": "x4",
+      "jogo": "Bomberman II",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Capcom's Soccer Shootout",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Capcom's Soccer Shootout",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Super Smash Bros",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Super Smash Bros",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Outtrigger",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Outtrigger",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x4",
-        "jogo": "Tony Hawk's Pro Skater 3",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x4",
+      "jogo": "Tony Hawk's Pro Skater 3",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Sonic Adventure 2 Battle",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Sonic Adventure 2 Battle",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "F1 Race",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "F1 Race",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "Bomberman Hardball",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "Bomberman Hardball",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "College Slam",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "College Slam",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Perfect Dark",
-        "desc": "combat simulator - explosives - 8 simulants"
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Perfect Dark",
+      "desc": "combat simulator - explosives - 8 simulants"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Sonic Shuffle",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Sonic Shuffle",
+      "desc": ""
     },
     {
-        "console": "Xbox",
-        "estacao": "x4",
-        "jogo": "Street Fighter Anniversary Collection",
-        "desc": ""
+      "console": "Xbox",
+      "estacao": "x4",
+      "jogo": "Street Fighter Anniversary Collection",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Tony Hawk's Pro Skater 4",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Tony Hawk's Pro Skater 4",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "Kirby's Dream Land 2",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "Kirby's Dream Land 2",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "Gauntlet: Dark Legacy",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "Gauntlet: Dark Legacy",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Saturday Night Slam Masters",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Saturday Night Slam Masters",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Snowboard Kids 2",
-        "desc": ""
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Snowboard Kids 2",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Re-Volt",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Re-Volt",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Donkey Konga 2",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Donkey Konga 2",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "Super R.C. Pro-Am",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "Super R.C. Pro-Am",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "Worms 3D",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "Worms 3D",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "FIFA: Road to World Cup 98",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "FIFA: Road to World Cup 98",
+      "desc": ""
     },
     {
-        "console": "N64",
-        "estacao": "x4",
-        "jogo": "Mario Kart",
-        "desc": "battle mode"
+      "console": "N64",
+      "estacao": "x4",
+      "jogo": "Mario Kart",
+      "desc": "battle mode"
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Toy Commander",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Toy Commander",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Bomberman",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Bomberman",
+      "desc": ""
     },
     {
-        "console": "Game Boy",
-        "estacao": "x4",
-        "jogo": "Top Gear Pocket 2",
-        "desc": ""
+      "console": "Game Boy",
+      "estacao": "x4",
+      "jogo": "Top Gear Pocket 2",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "Tony Hawk's Pro Skater 4",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "Tony Hawk's Pro Skater 4",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Hanna Barbera's Turbo Toons",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Hanna Barbera's Turbo Toons",
+      "desc": ""
     },
     {
-        "console": "Dreamcast",
-        "estacao": "x4",
-        "jogo": "Zombie Revenge",
-        "desc": ""
+      "console": "Dreamcast",
+      "estacao": "x4",
+      "jogo": "Zombie Revenge",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "SSX",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "SSX",
+      "desc": ""
     },
     {
-        "console": "PS2",
-        "estacao": "x4",
-        "jogo": "International Superstar Soccer 3",
-        "desc": ""
+      "console": "PS2",
+      "estacao": "x4",
+      "jogo": "International Superstar Soccer 3",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Looney Tunes B-Ball",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Looney Tunes B-Ball",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Mario Golf",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Mario Golf",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Micro Machines 2: Turbo Tournament",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Micro Machines 2: Turbo Tournament",
+      "desc": ""
     },
     {
-        "console": "GameCube",
-        "estacao": "x4",
-        "jogo": "Sonic 2 Battle",
-        "desc": ""
+      "console": "GameCube",
+      "estacao": "x4",
+      "jogo": "Sonic 2 Battle",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "NBA Jam: Tournament Edition",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "NBA Jam: Tournament Edition",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Street Hockey '95",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Street Hockey '95",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Puyo Puyo 2",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Puyo Puyo 2",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "Tiny Toon Adventures Wacky Sports",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "Tiny Toon Adventures Wacky Sports",
+      "desc": ""
     },
     {
-        "console": "SNES",
-        "estacao": "x4",
-        "jogo": "WWF Raw",
-        "desc": ""
+      "console": "SNES",
+      "estacao": "x4",
+      "jogo": "WWF Raw",
+      "desc": ""
     }
-];
-  </script>
+  ];
+</script>
