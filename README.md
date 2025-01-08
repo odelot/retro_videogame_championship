@@ -93,9 +93,19 @@ At the end, the app shows an animated awards ceremony highlighting the final sta
 
 ---
 
+## Troubleshooting
+
+The code likely has some bugs. If the web app enters an inconsistent state, a tip is to clear the browser's local storage. If you're not sure how to do that, you can enable the reset button by setting the variable `showReset` to `true`.
+
 ## Credits
 
 Music and images belong to their respective owners and were sourced or edited from Google searches or the games being celebrated.
 Lib Slot Machine: https://github.com/josex2r/jQuery-SlotMachine
+CDN libs and framework: keydrown, jquery, bootstrap
+SNES Super Mario Kart font: https://fontstruct.com/fontstructions/show/692065/super_mario_kart
+SNES Super Mario Kart sprites and backgrounds: https://www.spriters-resource.com/snes/smariokart/
+Mario Party Chance Time Video: https://www.youtube.com/watch?v=TfyrCcCMVgo
+Soundtracks: https://downloads.khinsider.com/
+Celebs pictures: https://brightside.me/articles/what-15-celebrities-would-look-like-if-they-had-parts-in-a-new-avatar-movie-810976/
 
 **Development:** odelot
