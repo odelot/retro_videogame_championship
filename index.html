@@ -13,6 +13,9 @@
    * GLOBAL VARIABLES 
    */
 
+  // always enable the reset button to clean the local storage - useful for debugging
+  const showReset = false;
+
   // enables or disables the audio - useful for debugging
   const audioOn = true;
 
@@ -79,8 +82,6 @@
     }
     return jTarget.animate({ left: oldLeft, top: oldTop }, interval);
   }
-
-
 
   // convert HSV to RGB - useful to generate a scale of colors
   function hsvToRgb(h, s, v) {
@@ -183,7 +184,7 @@
             ${leftPlayers}
           </div>
           <div class="col-2 versus">
-            <img src="versus.png" class="versus" />
+            <img src="media/versus.png" class="versus" />
           </div>
           <div class="col-5 right-players">
             ${rightPlayers}
@@ -735,7 +736,7 @@
       dk = new Image();
     }
     dk.id = "dk";
-    dk.src = "dk.png";
+    dk.src = "media/dk.png";
 
     dk.width = 275 * scaleX;
     dk.height = 275 * scaleY;
@@ -780,7 +781,7 @@
   function tocaMusicaFundoSorteio() {
     if (!audioOn)
       return;
-    estadoAplicativo.backgroundSorteioAudio = new Audio('57. Chance Time.mp3');
+    estadoAplicativo.backgroundSorteioAudio = new Audio('media/57. Chance Time.mp3');
     estadoAplicativo.backgroundSorteioAudio.autoplay = true;
     estadoAplicativo.backgroundSorteioAudio.loop = true;
     estadoAplicativo.backgroundSorteioAudio.play();
@@ -797,7 +798,7 @@
   function tocaMusicaFundoTabela() {
     if (!audioOn)
       return;
-    estadoAplicativo.backgroundTabelaAudio = new Audio("17 - Mario Ranks.mp3");
+    estadoAplicativo.backgroundTabelaAudio = new Audio("media/17 - Mario Ranks.mp3");
     estadoAplicativo.backgroundTabelaAudio.autoplay = true;
     estadoAplicativo.backgroundTabelaAudio.loop = true;
     estadoAplicativo.backgroundTabelaAudio.play();
@@ -814,7 +815,7 @@
   function tocaMusicaFundoVitoria() {
     if (!audioOn)
       return;
-    estadoAplicativo.backgroundVitoria = new Audio('25 - Tournament Win.mp3');
+    estadoAplicativo.backgroundVitoria = new Audio('media/25 - Tournament Win.mp3');
     estadoAplicativo.backgroundVitoria.autoplay = true;
     estadoAplicativo.backgroundVitoria.loop = true;
     estadoAplicativo.backgroundVitoria.play();
@@ -824,7 +825,7 @@
   function tocaChanceTime() {
     if (!audioOn)
       return;
-    const audio = new Audio('chance_time_voice.mp3');
+    const audio = new Audio('media/chance_time_voice.mp3');
     audio.play();
   }
 
@@ -832,7 +833,7 @@
   function tocaTambores(f) {
     if (!audioOn)
       return;
-    const audio = new Audio('tambores.mp3');
+    const audio = new Audio('media/tambores.mp3');
     audio.onended = f;
     audio.play();
   }
@@ -841,7 +842,7 @@
   function tocaJump() {
     if (!audioOn)
       return;
-    const audio = new Audio('smw_stomp_no_damage.wav');
+    const audio = new Audio('media/smw_stomp_no_damage.wav');
     audio.play();
 
   }
@@ -851,7 +852,7 @@
     if (!audioOn)
       return;
     let random = Math.ceil(Math.random() * 4)
-    const audio = new Audio('jump' + random + '.mp3');
+    const audio = new Audio('media/jump' + random + '.mp3');
     audio.play();
   }
 
@@ -859,7 +860,7 @@
   function tocaPartidaSorteada() {
     if (!audioOn)
       return;
-    const audio = new Audio('partida_sorteada.wav');
+    const audio = new Audio('media/partida_sorteada.wav');
     audio.play();
   }
 
@@ -1108,7 +1109,7 @@
       $(".telaSorteio").css("display", "flex");
     });*/
     estadoAplicativo.ligaSorteio = true;
-    estadoAplicativo.slotmachineAudio = new Audio('slotmachine.wav');
+    estadoAplicativo.slotmachineAudio = new Audio('media/slotmachine.wav');
     estadoAplicativo.slotmachineAudio.autoplay = false;
     configurarDK();
 
@@ -1135,7 +1136,7 @@
       if (!slotMachine[id].running) {
         return;
       }
-      new Audio('slotmachine.wav').play();
+      new Audio('media/slotmachine.wav').play();
       //estadoAplicativo.slotmachineAudio.play();
       await slotMachine[id].machine.prev();
       await setTimeout(run, 0);
@@ -1487,6 +1488,9 @@
 
   // excute the code as soon as the page loads
   document.addEventListener("DOMContentLoaded", function () {
+    if (showReset) {
+      $(".reset").fadeIn().off().on("click", reset);
+    }
     iniciarPagina();
 
     window.addEventListener('resize', () => {
@@ -1500,7 +1504,7 @@
 <style type="text/css">
   @font-face {
     font-family: "MarioKart";
-    src: url(super-mario-kart.ttf) format("truetype");
+    src: url(media/super-mario-kart.ttf) format("truetype");
   }
 
   html,
@@ -1584,14 +1588,14 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    background-image: url("fundo4x.png");
+    background-image: url("media/fundo4x.png");
   }
 
   .telaVitoria {
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
-    background-image: url("fundoVitoria.png");
+    background-image: url("media/fundoVitoria.png");
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1600,12 +1604,12 @@
   .reset {
     position: absolute;
     bottom: 10%;
-    right: 10%;
+    left: 10%;
     display: none;
   }
 
   .congratulations {
-    background-image: url(congratulations.png);
+    background-image: url(media/congratulations.png);
     background-size: contain;
     transform: scale(0);
     display: flex;
@@ -1783,13 +1787,13 @@
 
   .linha {
     height: 12px;
-    background-image: url("mariokartline.png");
+    background-image: url("media/mariokartline.png");
   }
 
   .linha2 {
     padding-top: 1px;
     height: 3px;
-    background-image: url("mariokartline2.png");
+    background-image: url("media/mariokartline2.png");
     padding-bottom: 1px;
   }
 
@@ -1850,7 +1854,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-color: black;
-    background-image: url("fundoSorteio.png");
+    background-image: url("media/fundoSorteio.png");
   }
 
   .exclamacao {
@@ -1867,14 +1871,14 @@
   }
 
   .interrogacao {
-    background-image: url("moldura.png");
+    background-image: url("media/moldura.png");
     /* background-size: cover; */
     background-size: contain;
     background-repeat: no-repeat;
   }
 
   .telaSorteio .interrogacao {
-    background-image: url("moldura.png");
+    background-image: url("media/moldura.png");
     /*width: 160px;
     height: 145px;*/
     margin-left: -100%;
@@ -1969,22 +1973,22 @@
   }
 
   .question {
-    background-image: url("opcao-indefinida.png");
+    background-image: url("media/opcao-indefinida.png");
     background-size: cover;
   }
 
   .x2 {
-    background-image: url("x2.png");
+    background-image: url("media/x2.png");
     background-size: cover;
   }
 
   .x3 {
-    background-image: url("x3.png");
+    background-image: url("media/x3.png");
     background-size: cover;
   }
 
   .x4 {
-    background-image: url("x4.png");
+    background-image: url("media/x4.png");
     background-size: cover;
   }
 
@@ -2303,10 +2307,11 @@
     text-shadow: 0 0 0 BLACK;
   }
 </style>
-
+<button class="btn btn-danger reset">Reset?</button>
 <div class="w-100 h-100 tela1 tabelaCompetidores telaTabela">
   <div class="proxima-rodada">
-    <img src="marioparty3.png">
+    
+    <img src="media/marioparty3.png">
     <p class="strokeme">Next Round</p>
     <!--<p class="strokeme">Proxima Rodada</p>-->
   </div>
@@ -2315,14 +2320,14 @@
     </div>
     <div class="col-6 titulo">
       <div>
-        <img src="mushroom.png">
-        <img src="mushroom.png">
-        <img src="mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
         <!--<p class="fs-1 strokeme">CAMPEONATO</p>-->
         <p class="fs-1 strokeme">CHAMPIONSHIP</p>
-        <img src="mushroom.png">
-        <img src="mushroom.png">
-        <img src="mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
       </div>
     </div>
     <div class="col">
@@ -2363,7 +2368,7 @@
 </div>
 <div class="w-100 h-100 tela2 telaPreSorteio" style="display: none;">
   <video id="video" class="video w-100 h-100">
-    <source src="chancetime.mp4" type="video/mp4">
+    <source src="media/chancetime.mp4" type="video/mp4">
   </video>
 
 </div>
@@ -2410,7 +2415,7 @@
     <div class="opcao question"></div>
   </div>
 
-  <img src="exclamacao.png" class="exclamacao">
+  <img src="media/exclamacao.png" class="exclamacao">
 
 
 
@@ -2424,13 +2429,13 @@
     </div>
     <div class="col-6 titulo">
       <div>
-        <img src="mushroom.png">
-        <img src="mushroom.png">
-        <img src="mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
         <p class="fs-1 strokeme identificador-rodada">Rodada #</p>
-        <img src="mushroom.png">
-        <img src="mushroom.png">
-        <img src="mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
+        <img src="media/mushroom.png">
       </div>
     </div>
     <div class="col">
@@ -2447,8 +2452,8 @@
   <div class="partidas"></div>
 </div>
 <div class="w-100 h-100 tela5 telaVitoria" style="display: none;">
-  <img src="vitoria.gif" class="animacao-vitoria">
-  <img src="podio.png" class="podio">
+  <img src="media/vitoria.gif" class="animacao-vitoria">
+  <img src="media/podio.png" class="podio">
   <div class="primeiro-lugar"></div>
   <div class="segundo-lugar"></div>
   <div class="terceiro1-lugar"></div>
@@ -2465,22 +2470,22 @@
   // variable that controls the event
   let evento = {
     participantes: [
-      { nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "blake.png" },
-      { nome: "Tom Hanks", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "tom.png" },
-      { nome: "Brad Pitt", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "brad.png" },
-      { nome: "Keanu Reeves", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "keanu.png" },
-      { nome: "Jennifer Lopez", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "jennifer.png" },
-      { nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "julia.png" },
-      { nome: "Robert Downey Jr.", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "robert.png" },
-      { nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "aniston.png" },
-      { nome: "Henry Cavill", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "henry.png" },
-      { nome: "Scarlett Johansson", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "scarlett.png" },
-      { nome: "Leonardo DiCaprio", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "leo.png" },
-      { nome: "Tom Cruise", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "cruise.png" },
-      { nome: "Sandra Bullock", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "sandra.png" },
-      { nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "chris.png" },
-      { nome: "Angelina Jolie", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "angelina.png" },
-      { nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "george.png" },
+      { nome: "Blake Lively", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/blake.png" },
+      { nome: "Tom Hanks", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/tom.png" },
+      { nome: "Brad Pitt", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/brad.png" },
+      { nome: "Keanu Reeves", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/keanu.png" },
+      { nome: "Jennifer Lopez", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/jennifer.png" },
+      { nome: "Julia Roberts", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/julia.png" },
+      { nome: "Robert Downey Jr.", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/robert.png" },
+      { nome: "Jennifer Aniston", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/aniston.png" },
+      { nome: "Henry Cavill", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/henry.png" },
+      { nome: "Scarlett Johansson", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/scarlett.png" },
+      { nome: "Leonardo DiCaprio", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/leo.png" },
+      { nome: "Tom Cruise", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/cruise.png" },
+      { nome: "Sandra Bullock", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/sandra.png" },
+      { nome: "Chris Evans", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/chris.png" },
+      { nome: "Angelina Jolie", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/angelina.png" },
+      { nome: "George Clooney", rodada1: 0, rodada2: 0, rodada3: 0, rodada4: 0, total: 0, profileImg: "participants/george.png" },
     ],
     rodadaAtual: 1, // round number - do not change it
     rodadas: new Array(4), // 4 rounds - do not change it, code is expecting 4 rounds for now
@@ -2489,20 +2494,20 @@
   // EDIT HERE: add the consoles you want to use in the event
   // you can add more consoles/images, but you need to add the games for them in the next section
   const listaDeVideoGames = [
-    { nome: "Dreamcast", imagem: "dreamcast.png" },
-    { nome: "Game Boy", imagem: "gameboy.png" },
-    { nome: "GameCube", imagem: "gamecube.png" },
-    { nome: "GBA", imagem: "gba.png" },
-    { nome: "GBC", imagem: "gbc.png" },
-    { nome: "Mega Drive", imagem: "megadrive.png" },
-    { nome: "N64", imagem: "n64.png" },
-    { nome: "PS1", imagem: "ps1.png" },
-    { nome: "PS2", imagem: "ps2.png" },
-    { nome: "NES", imagem: "nes.png" },
-    { nome: "SNES", imagem: "snes.png" },
-    { nome: "Virtual Boy", imagem: "virtualboy.png" },
-    { nome: "Wii", imagem: "wii.png" },
-    { nome: "Xbox", imagem: "xbox.png" }
+    { nome: "Dreamcast", imagem: "consoles/dreamcast.png" },
+    { nome: "Game Boy", imagem: "consoles/gameboy.png" },
+    { nome: "GameCube", imagem: "consoles/gamecube.png" },
+    { nome: "GBA", imagem: "consoles/gba.png" },
+    { nome: "GBC", imagem: "consoles/gbc.png" },
+    { nome: "Mega Drive", imagem: "consoles/megadrive.png" },
+    { nome: "N64", imagem: "consoles/n64.png" },
+    { nome: "PS1", imagem: "consoles/ps1.png" },
+    { nome: "PS2", imagem: "consoles/ps2.png" },
+    { nome: "NES", imagem: "consoles/nes.png" },
+    { nome: "SNES", imagem: "consoles/snes.png" },
+    { nome: "Virtual Boy", imagem: "consoles/virtualboy.png" },
+    { nome: "Wii", imagem: "consoles/wii.png" },
+    { nome: "Xbox", imagem: "consoles/xbox.png" }
   ];
 
   // EDIT HERE: add the games for each console
